@@ -41,16 +41,13 @@ const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
 // console.log(deck);
 
 // Refactor for entire deck
-const generateDeck = function (suit, rank) {
+const generateDeck = function () {
   for (let n = 0; n < suit.length; n++) {
     for (let i = 0; i < rank.length; i++) {
       deck.push({ suit: suit[n], rank: rank[i] });
     }
   }
 };
-
-generateDeck(suit, rank);
-console.log(deck);
 
 //Shuffle, take in deck array, generate random number, destructure deck[random] and place into shuffledDeck
 // const shuffle = function (deck) {
@@ -122,7 +119,7 @@ console.log(playDeck());
 // Fisher Yates Shuffle
 // * source https://medium.com/swlh/the-javascript-shuffle-62660df19a5d
 
-const fisYatesShuff = function (deck) {
+const fisYatesShuff = function () {
   let randomCard;
   let tempX;
   for (let i = deck.length - 1; i > -1; i -= 1) {
@@ -134,8 +131,7 @@ const fisYatesShuff = function (deck) {
   return deck;
 };
 
-fisYatesShuff(deck);
-console.log(deck);
+fisYatesShuff();
 
 const PlayerCl = class {
   constructor(playerNo, hand) {
@@ -158,7 +154,6 @@ const initPlayers = function (nPlayers) {
 };
 
 initPlayers(4);
-console.log(players[0].hand);
 
 // Distribute cards to players plus house
 // Player class, cards in hand
@@ -188,15 +183,6 @@ const dealCard = function (activePlayers) {
     deck.splice(0, 1);
   }
 };
-dealCard(activePlayers);
-console.log(players);
-console.log(deck.length);
-
-dealCard(activePlayers);
-console.log(players);
-console.log(deck.length);
-
-console.log(dealer);
 
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
@@ -213,7 +199,3 @@ const dealerTurn = function () {
 };
 
 const dealerRiver = dealerTurn;
-
-dealerFlop();
-console.log(deck.length);
-console.log(dealer.hand);
