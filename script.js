@@ -131,8 +131,6 @@ const fisYatesShuff = function () {
   return deck;
 };
 
-fisYatesShuff();
-
 const PlayerCl = class {
   constructor(playerNo, hand) {
     this.playerNo = playerNo;
@@ -141,11 +139,18 @@ const PlayerCl = class {
 };
 
 let players = [];
-let dealer;
+
+const dealer = new (class {
+  constructor(hand) {
+    this.hand = hand;
+  }
+})();
+
+console.log(dealer);
 
 const initPlayers = function (nPlayers) {
   // There's always a dealer
-  dealer = new PlayerCl("dealer");
+  // dealer = new PlayerCl("dealer");
 
   // Initialize n number of players
   for (let i = 0; i < nPlayers; i++) {
