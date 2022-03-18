@@ -204,3 +204,26 @@ const dealerTurn = function () {
 };
 
 const dealerRiver = dealerTurn;
+
+// To initialize game, generate deck and shuffle
+
+const initGame = function () {
+  generateDeck();
+
+  fisYatesShuff();
+  console.log("Shuffling deck...");
+
+  let counter = 3;
+
+  const countdown = setInterval(function () {
+    console.log(counter);
+    counter--;
+
+    if (counter < 0) {
+      console.log("Done, lets play!");
+      clearInterval(countdown);
+    }
+  }, 1000);
+};
+
+initGame();
