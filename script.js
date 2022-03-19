@@ -2,19 +2,73 @@
 
 console.log("My first project");
 
+// DOM Elements
+const btnInit = document.querySelector(".btn-init");
+const btnPlayers = document.querySelector(".btn-players");
+const btnDeal = document.querySelector(".btn-deal");
+const btnFlop = document.querySelector(".btn-flop");
+const btnReset = document.querySelector(".btn-reset");
+
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
 // Implement logic of who wins
 // Implement raise/calls, player rotation
 
 // let deck = [{ suit: "Diamonds", rank: "Ace" }];
+
+// Global variable/state
 let deck = [];
+let players = [];
+let dealer;
+let activePlayers;
+
+const gameStateArr = [
+  "reset",
+  "initGame",
+  "setPlayers",
+  "r1Deal",
+  "bet1",
+  "flop",
+  "r2Deal",
+  "turn",
+  "bet2",
+  "river",
+  "bet3",
+  "winner",
+];
+
+let gameState = gameStateArr[0];
 
 // Diamonds, Spade, Hearts, Clubs
 // Ace, 1-to-10, J, Q, K
 
 // Hard code or generate cards? 52 cards
 // For of loop
+
+/*
+// pseudocode for game state (can be an array), when game progresses gameState i++
+// gameState = 'initGame'
+// gameState = 'setPlayers'
+// gameState = 'r1Deal'
+// gameState = 'bet1'
+// gameState = 'flop'
+// gameState = 'r2Deal'
+// gameState = 'turn'
+// gameState = 'bet2'
+// gameState = 'river'
+// gameState = 'bet3'
+// gameState = 'winner'
+*/
+
+console.log(gameStateArr);
+
+const resetGame = function () {
+  gameState = gameStateArr[0];
+  deck = [];
+  players = [];
+  activePlayers;
+  dealer;
+};
 
 const suit = ["Diamonds", "Spade", "Hearts", "Clubs"];
 const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
@@ -49,9 +103,7 @@ const generateDeck = function (suit, rank) {
   }
 };
 
-generateDeck(suit, rank);
-console.log(deck);
-
+/*
 //Shuffle, take in deck array, generate random number, destructure deck[random] and place into shuffledDeck
 // const shuffle = function (deck) {
 // // Generate 52 random numbers
@@ -114,15 +166,15 @@ const playDeck = function () {
 };
 
 console.log(playDeck());
-*/
 // The previous logic is based on my experience to randomize sequence of numbers from excel
 // Generate rand() column, sort big to small
 // Computationally expensive as the probability to generate unique numbers will be harder over time
+*/
 
 // Fisher Yates Shuffle
 // * source https://medium.com/swlh/the-javascript-shuffle-62660df19a5d
 
-const fisYatesShuff = function (deck) {
+const fisYatesShuff = function () {
   let randomCard;
   let tempX;
   for (let i = deck.length - 1; i > -1; i -= 1) {
@@ -134,9 +186,7 @@ const fisYatesShuff = function (deck) {
   return deck;
 };
 
-fisYatesShuff(deck);
-console.log(deck);
-
+// Player Class prototype
 const PlayerCl = class {
   constructor(playerNo, hand) {
     this.playerNo = playerNo;
@@ -144,22 +194,26 @@ const PlayerCl = class {
   }
 };
 
-let players = [];
-let dealer;
+// Initialize dealer class
+const initDealer = function () {
+  dealer = new (class {
+    constructor(hand) {
+      this.hand = [];
+    }
+  })();
+};
 
+// Initialize number of players
 const initPlayers = function (nPlayers) {
-  // There's always a dealer
-  dealer = new PlayerCl("dealer");
-
   // Initialize n number of players
   for (let i = 0; i < nPlayers; i++) {
     players[i] = new PlayerCl(`player ${i + 1}`);
   }
+
+  console.log(`${nPlayers} players initialized`);
 };
 
-initPlayers(4);
-console.log(players[0].hand);
-
+/*
 // Distribute cards to players plus house
 // Player class, cards in hand
 // Remove top card playDeck[0], burn
@@ -177,8 +231,8 @@ console.log(players[0].hand);
 // Deal, take deck[0], add to player1.hand.push, delete from deck[0].remove - rotate
 
 // Object destructuring
+*/
 
-let activePlayers = 4;
 const dealCard = function (activePlayers) {
   // put card into player and delete card
 
@@ -188,15 +242,6 @@ const dealCard = function (activePlayers) {
     deck.splice(0, 1);
   }
 };
-dealCard(activePlayers);
-console.log(players);
-console.log(deck.length);
-
-dealCard(activePlayers);
-console.log(players);
-console.log(deck.length);
-
-console.log(dealer);
 
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
@@ -214,6 +259,98 @@ const dealerTurn = function () {
 
 const dealerRiver = dealerTurn;
 
-dealerFlop();
-console.log(deck.length);
-console.log(dealer.hand);
+// To initialize game, generate deck and shuffle
+
+const initGame = function () {
+  if (gameState === gameStateArr[0]) {
+    generateDeck(suit, rank);
+
+    fisYatesShuff();
+    console.log("Shuffling deck...");
+
+    let counter = 3;
+
+    const countdown = setInterval(function () {
+      console.log(counter);
+      counter--;
+
+      if (counter < 0) {
+        console.log("Done, lets play!");
+        clearInterval(countdown);
+      }
+    }, 1000);
+    console.log(deck);
+
+    // Change game state after initialization
+    gameState = gameStateArr[1];
+  } else {
+    console.error(`Can't initialize game! Please reset!`);
+  }
+};
+
+btnInit.addEventListener("click", initGame);
+
+btnPlayers.addEventListener("click", function () {
+  if (gameState === gameStateArr[1]) {
+    // Initialize dealer
+    initDealer();
+
+    // Select number of players
+    let numPlayers;
+
+    // Function to check validitity of returned value for number of players
+    function checkValue() {
+      numPlayers = Number(prompt("How many players? (1 - 4)"));
+
+      // check if value in prompt is valid/true
+      if (Number.isInteger(numPlayers) && numPlayers >= 1 && numPlayers <= 4) {
+        // Initilize number of players
+        initPlayers(numPlayers);
+
+        // Set activePlayers global state
+        activePlayers = numPlayers;
+      } else {
+        checkValue();
+      }
+    }
+
+    // Call function
+    checkValue();
+
+    // Change game state to setPlayers
+    gameState = gameStateArr[2];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnDeal.addEventListener("click", function () {
+  if (gameState === gameStateArr[2]) {
+    // Needs gameState
+
+    // Check which stage of the game is at
+    // First deal, initial number of players get dealt two cards
+    dealCard(activePlayers);
+    dealCard(activePlayers);
+    console.log(...players);
+    gameState = gameStateArr[3];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnFlop.addEventListener("click", function () {
+  if (gameState === gameStateArr[3]) {
+    dealerFlop();
+    console.log(dealer.hand);
+
+    gameState = gameStateArr[4];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnReset.addEventListener("click", function () {
+  resetGame();
+  console.log("Game reset, please initialize game to play!");
+});
