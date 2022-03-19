@@ -2,6 +2,12 @@
 
 console.log("My first project");
 
+// DOM Elements
+const btnInit = document.querySelector(".btn-init");
+const btnPlayers = document.querySelector(".btn-players");
+const btnDeal = document.querySelector(".btn-deal");
+const btnFlop = document.querySelector(".btn-flop");
+
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
 // Implement logic of who wins
@@ -41,7 +47,7 @@ const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
 // console.log(deck);
 
 // Refactor for entire deck
-const generateDeck = function () {
+const generateDeck = function (suit, rank) {
   for (let n = 0; n < suit.length; n++) {
     for (let i = 0; i < rank.length; i++) {
       deck.push({ suit: suit[n], rank: rank[i] });
@@ -146,8 +152,6 @@ const dealer = new (class {
   }
 })();
 
-console.log(dealer);
-
 const initPlayers = function (nPlayers) {
   // There's always a dealer
   // dealer = new PlayerCl("dealer");
@@ -156,9 +160,9 @@ const initPlayers = function (nPlayers) {
   for (let i = 0; i < nPlayers; i++) {
     players[i] = new PlayerCl(`player ${i + 1}`);
   }
-};
 
-initPlayers(4);
+  console.log(`${nPlayers} players initialized`);
+};
 
 // Distribute cards to players plus house
 // Player class, cards in hand
@@ -208,7 +212,7 @@ const dealerRiver = dealerTurn;
 // To initialize game, generate deck and shuffle
 
 const initGame = function () {
-  generateDeck();
+  generateDeck(suit, rank);
 
   fisYatesShuff();
   console.log("Shuffling deck...");
@@ -224,6 +228,52 @@ const initGame = function () {
       clearInterval(countdown);
     }
   }, 1000);
+  console.log(deck);
 };
 
-initGame();
+btnInit.addEventListener("click", initGame);
+
+btnPlayers.addEventListener("click", function () {
+  let numPlayers;
+
+  function checkValue() {
+    numPlayers = Number(prompt("How many players? (1 - 4)"));
+
+    // check if value in prompt is valid/true
+    if (Number.isInteger(numPlayers) && numPlayers >= 1 && numPlayers <= 4) {
+      initPlayers(numPlayers);
+    } else {
+      checkValue();
+    }
+  }
+
+  checkValue();
+});
+
+btnDeal.addEventListener("click", function () {
+  // Needs gameState
+
+  // Check which stage of the game is at
+  // First deal, initial number of players get dealt two cards
+  dealCard(4);
+  dealCard(4);
+  console.log(
+    players[0].hand,
+    players[1].hand,
+    players[2].hand,
+    players[3].hand
+  );
+});
+
+// pseudocode for game state (can be an array), when game progresses gameState i++
+// gameState = 'initGame'
+// gameState = 'setPlayers'
+// gameState = 'r1Deal'
+// gameState = 'bet1'
+// gameState = 'flop'
+// gameState = 'r2Deal'
+// gameState = 'turn'
+// gameState = 'bet2'
+// gameState = 'river'
+// gameState = 'bet3'
+// gameState = 'winner'
