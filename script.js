@@ -10,6 +10,7 @@ const btnFlop = document.querySelector(".btn-flop");
 const btnTurn = document.querySelector(".btn-turn");
 const btnRiver = document.querySelector(".btn-river");
 const btnReset = document.querySelector(".btn-reset");
+let textbox = document.querySelector(".textarea");
 
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
@@ -63,6 +64,12 @@ let gameState = gameStateArr[0];
 */
 
 console.log(gameStateArr);
+
+function addTextBox(text) {
+  textbox.value += text;
+}
+
+addTextBox("welcome!");
 
 const resetGame = function () {
   gameState = gameStateArr[0];
@@ -200,10 +207,11 @@ const PlayerCl = class {
 
     for (let i = 0; i < this.hand.length; i++) {
       let { rank: playerRank, suit: playerSuit } = this.hand[i];
-      playerHandArr.push(`${playerRank} of ${playerSuit}`);
+      playerHandArr.push(` ${playerRank} of ${playerSuit}`);
     }
 
     console.log(`${this.playerNo} has ${playerHandArr}`);
+    addTextBox(`\n${this.playerNo} has${playerHandArr}`);
   }
 };
 
@@ -223,9 +231,10 @@ const initDealer = function () {
         let { rank: dealerRank, suit: dealerSuit } = dealer.hand[i];
 
         // Push results to array
-        dealerHandStrArr.push(`${dealerRank} of ${dealerSuit}`);
+        dealerHandStrArr.push(` ${dealerRank} of ${dealerSuit}`);
       }
-      console.log(`Dealer has ${dealerHandStrArr}`);
+      console.log(`Dealer has${dealerHandStrArr}`);
+      addTextBox(`\nDealer has${dealerHandStrArr}`);
     }
   })();
 };
@@ -237,7 +246,7 @@ const initPlayers = function (nPlayers) {
     players[i] = new PlayerCl(`player ${i + 1}`);
   }
 
-  console.log(`${nPlayers} players initialized`);
+  addTextBox(`\n${nPlayers} players initialized`);
 };
 
 // Show dealers hand
@@ -297,6 +306,7 @@ const dealerRiver = function () {
 // To initialize game, generate deck and shuffle
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
+    addTextBox("\nInitializing game");
     generateDeck(suit, rank);
 
     fisYatesShuff();
@@ -307,12 +317,14 @@ const initGame = function () {
     const countdown = setInterval(function () {
       console.log(counter);
       counter--;
+      addTextBox(".");
 
-      if (counter < 0) {
-        console.log("Done, lets play!");
+      if (counter < 1) {
+        addTextBox("\nDone, lets play!\nSelect number of players");
         clearInterval(countdown);
       }
     }, 1000);
+
     console.log(deck);
 
     // Change game state after initialization
@@ -321,6 +333,10 @@ const initGame = function () {
     console.error(`Can't initialize game! Please reset!`);
   }
 };
+
+//************************************************//
+//************************************************//
+//************************************************//
 
 // DOM
 btnInit.addEventListener("click", initGame);
@@ -367,7 +383,6 @@ btnDeal.addEventListener("click", function () {
     // First deal, initial number of players get dealt two cards
     dealCard(activePlayers);
     dealCard(activePlayers);
-    console.log(...players);
 
     for (let i = 0; i < players.length; i++) {
       players[i].showHand();
