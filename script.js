@@ -7,11 +7,7 @@ const btnInit = document.querySelector(".btn-init");
 const btnPlayers = document.querySelector(".btn-players");
 const btnDeal = document.querySelector(".btn-deal");
 const btnFlop = document.querySelector(".btn-flop");
-const btnTurn = document.querySelector(".btn-turn");
-const btnRiver = document.querySelector(".btn-river");
-const btnEval = document.querySelector(".btn-eval");
 const btnReset = document.querySelector(".btn-reset");
-let textbox = document.querySelector(".textarea");
 
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
@@ -66,12 +62,6 @@ let gameState = gameStateArr[0];
 
 console.log(gameStateArr);
 
-function addTextBox(text) {
-  textbox.value += text;
-}
-
-addTextBox("welcome!");
-
 const resetGame = function () {
   gameState = gameStateArr[0];
   deck = [];
@@ -81,7 +71,7 @@ const resetGame = function () {
 };
 
 const suit = ["Diamonds", "Spade", "Hearts", "Clubs"];
-const rank = [2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King", "Ace"];
+const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
 
 // const generateCards = function (suit, rank) {
 //   for (let i = 0; i < suit.length; ++i) {
@@ -202,39 +192,6 @@ const PlayerCl = class {
     this.playerNo = playerNo;
     this.hand = [];
   }
-
-  showHand() {
-    let playerHandArr = [];
-
-    for (let i = 0; i < this.hand.length; i++) {
-      let { rank: playerRank, suit: playerSuit } = this.hand[i];
-      playerHandArr.push(` ${playerRank} of ${playerSuit}`);
-    }
-
-    console.log(`${this.playerNo} has ${playerHandArr}`);
-    addTextBox(`\n${this.playerNo} has${playerHandArr}`);
-    return playerHandArr;
-  }
-
-  rearrangeRank() {
-    let playerRankArranged = [];
-
-    for (let i = 0; i < this.hand.length; i++) {
-      let { rank: playerRank } = this.hand[i];
-      playerRankArranged.push(playerRank);
-    }
-    return playerRankArranged;
-  }
-
-  rearrangeSuit() {
-    let playerSuitArranged = [];
-
-    for (let i = 0; i < this.hand.length; i++) {
-      let { rank: playerRank, suit: playerSuit } = this.hand[i];
-      playerSuitArranged.push(playerSuit);
-    }
-    return playerSuitArranged;
-  }
 };
 
 // Initialize dealer class
@@ -242,41 +199,6 @@ const initDealer = function () {
   dealer = new (class {
     constructor(hand) {
       this.hand = [];
-    }
-    // Method
-    showHand() {
-      // Empty array to store string results of dealer's hand
-      let dealerHandStrArr = [];
-
-      for (let i = 0; i < dealer.hand.length; i++) {
-        // Deconstruct hand
-        let { rank: dealerRank, suit: dealerSuit } = dealer.hand[i];
-
-        // Push results to array
-        dealerHandStrArr.push(` ${dealerRank} of ${dealerSuit}`);
-      }
-      console.log(`Dealer has${dealerHandStrArr}`);
-      addTextBox(`\nDealer has${dealerHandStrArr}`);
-    }
-
-    rearrangeRank() {
-      let dealerRankArranged = [];
-
-      for (let i = 0; i < this.hand.length; i++) {
-        let { rank: dealerRank } = this.hand[i];
-        dealerRankArranged.push(dealerRank);
-      }
-      return dealerRankArranged;
-    }
-
-    rearrangeSuit() {
-      let dealerSuitArranged = [];
-
-      for (let i = 0; i < this.hand.length; i++) {
-        let { rank: dealerRank, suit: dealerSuit } = this.hand[i];
-        dealerSuitArranged.push(dealerSuit);
-      }
-      return dealerSuitArranged;
     }
   })();
 };
@@ -288,10 +210,8 @@ const initPlayers = function (nPlayers) {
     players[i] = new PlayerCl(`player ${i + 1}`);
   }
 
-  addTextBox(`\n${nPlayers} players initialized`);
+  console.log(`${nPlayers} players initialized`);
 };
-
-// Show dealers hand
 
 /*
 // Distribute cards to players plus house
@@ -313,7 +233,6 @@ const initPlayers = function (nPlayers) {
 // Object destructuring
 */
 
-// Deal cards to players
 const dealCard = function (activePlayers) {
   // put card into player and delete card
 
@@ -324,7 +243,6 @@ const dealCard = function (activePlayers) {
   }
 };
 
-// Dealer flop
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -332,7 +250,6 @@ const dealerFlop = function () {
   deck.splice(0, 3);
 };
 
-// Dealer Turn
 const dealerTurn = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -340,15 +257,12 @@ const dealerTurn = function () {
   deck.splice(0, 1);
 };
 
-// Dearler River
-const dealerRiver = function () {
-  dealerTurn();
-};
+const dealerRiver = dealerTurn;
 
 // To initialize game, generate deck and shuffle
+
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
-    addTextBox("\nInitializing game");
     generateDeck(suit, rank);
 
     fisYatesShuff();
@@ -359,14 +273,12 @@ const initGame = function () {
     const countdown = setInterval(function () {
       console.log(counter);
       counter--;
-      addTextBox(".");
 
-      if (counter < 1) {
-        addTextBox("\nDone, lets play!\nSelect number of players");
+      if (counter < 0) {
+        console.log("Done, lets play!");
         clearInterval(countdown);
       }
     }, 1000);
-
     console.log(deck);
 
     // Change game state after initialization
@@ -376,99 +288,6 @@ const initGame = function () {
   }
 };
 
-//                $$\                 $$\                     $$\
-//                \__|                $$ |                    \__|
-//  $$\  $$\  $$\ $$\ $$$$$$$\        $$ | $$$$$$\   $$$$$$\  $$\  $$$$$$$\
-//  $$ | $$ | $$ |$$ |$$  __$$\       $$ |$$  __$$\ $$  __$$\ $$ |$$  _____|
-//  $$ | $$ | $$ |$$ |$$ |  $$ |      $$ |$$ /  $$ |$$ /  $$ |$$ |$$ /
-//  $$ | $$ | $$ |$$ |$$ |  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |$$ |
-//  \$$$$$\$$$$  |$$ |$$ |  $$ |      $$ |\$$$$$$  |\$$$$$$$ |$$ |\$$$$$$$\
-//   \_____\____/ \__|\__|  \__|      \__| \______/  \____$$ |\__| \_______|
-//                                                  $$\   $$ |
-//                                                  \$$$$$$  |
-//                                                   \______/
-
-// Compare players hand in combination with dealer's hand
-// Make new array combining player and dealer's cards
-// Make some scores, highest points win
-
-// ** Source: https://www.cardplayer.com/rules-of-poker/hand-rankings ** //
-// Royal flush A, K, Q, J, 10, all the same suit.
-// Straight flush Five cards in a sequence, all in the same suit.
-// Four of a kind All four cards of the same rank.
-// Full house Three of a kind with a pair.
-// Flush Any five cards of the same suit, but not in a sequence.
-// Straight Five cards in a sequence, but not of the same suit.
-// Three of a kind Three cards of the same rank.
-// Two pair Two different pairs.
-// Pair Two cards of the same rank.
-// High Card When you haven't made any of the hands above, the highest card plays. In the example below, the jack plays as the highest card.
-
-const handRanking = [
-  "Royal flush",
-  "Straight flush",
-  "Four of a kind",
-  "Full house",
-  "Flush",
-  "Straight",
-  "Three of a kind",
-  "Two pair",
-  "Pair",
-  "High Card",
-];
-
-// Sequence and pairs lastly, highest card
-// For each player, what is the best combo - then compare that combo with other players
-// Are there any seqence? How many card are in sequence?  Are the cards all in the same suit? Are there any pairs?
-// Rearrange players hand in an array of [rank] and [suit] instead of [card]
-// Then sort cards, check if there are any sequential ranks, check if there are pairs/duplicates
-
-const evaluateCards = function () {
-  // create new array [rank] and [suit] for each player including dealer's cards
-  // or not necessary, just access from player[i].hand[i].rank, player[i].hand[i].rank + dealer.hand.rank[i]
-  let playersRank = [];
-  let playersSuit = [];
-  let playersRankIndexOf = [];
-  let playersRankIndexOfSorted = [];
-  let playersSuitSorted = [];
-
-  // for all players
-  for (let i = 0; i < players.length; i++) {
-    playersRank.push(players[i].rearrangeRank());
-    playersSuit.push(players[i].rearrangeSuit());
-  }
-
-  // push dealer's card into array
-  for (let i = 0; i < playersRank.length; i++) {
-    playersRank[i].push(...dealer.rearrangeRank());
-  }
-
-  for (let i = 0; i < playersSuit.length; i++) {
-    playersSuit[i].push(...dealer.rearrangeSuit());
-  }
-
-  // reassign card rank into indexOf
-  for (let i = 0; i < playersRank.length; i++) {
-    playersRankIndexOf[i] = [];
-    playersRank[i].forEach(function (curr, index, arr) {
-      playersRankIndexOf[i].push(rank.indexOf(curr));
-    });
-  }
-
-  // sort rank, remember to keep suit sorted accordingly
-  console.log(playersRank, playersSuit);
-  console.log(playersRankIndexOf);
-};
-
-// sort cards, remmeber to have [suit] sorted accordingly
-//check if cards are in sequence or any pairs  are present
-// return player score according to handRanking
-
-//************************************************//
-//************************************************//
-//************************************************//
-
-// DOM
 btnInit.addEventListener("click", initGame);
 
 btnPlayers.addEventListener("click", function () {
@@ -481,7 +300,7 @@ btnPlayers.addEventListener("click", function () {
 
     // Function to check validitity of returned value for number of players
     function checkValue() {
-      numPlayers = Number(prompt("How many players? (1 - 4)", "4"));
+      numPlayers = Number(prompt("How many players? (1 - 4)"));
 
       // check if value in prompt is valid/true
       if (Number.isInteger(numPlayers) && numPlayers >= 1 && numPlayers <= 4) {
@@ -513,10 +332,7 @@ btnDeal.addEventListener("click", function () {
     // First deal, initial number of players get dealt two cards
     dealCard(activePlayers);
     dealCard(activePlayers);
-
-    for (let i = 0; i < players.length; i++) {
-      players[i].showHand();
-    }
+    console.log(...players);
     gameState = gameStateArr[3];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
@@ -527,49 +343,8 @@ btnFlop.addEventListener("click", function () {
   if (gameState === gameStateArr[3]) {
     dealerFlop();
     console.log(dealer.hand);
-    dealer.showHand();
 
-    // Skip from 3 to 5, no bets
-    gameState = gameStateArr[5];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
-
-btnTurn.addEventListener("click", function () {
-  if (gameState === gameStateArr[5]) {
-    dealerTurn();
-    console.log(dealer.hand);
-    dealer.showHand();
-
-    // Skip from 5 to 7, no bets
-
-    gameState = gameStateArr[7];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
-
-btnRiver.addEventListener("click", function () {
-  if (gameState === gameStateArr[7]) {
-    dealerRiver();
-    console.log(dealer.hand);
-    dealer.showHand();
-
-    // Skip from 7 to 9, no bets
-
-    gameState = gameStateArr[9];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
-
-btnEval.addEventListener("click", function () {
-  if (gameState === gameStateArr[9]) {
-    evaluateCards();
-    addTextBox("\nCard evaluation logic still under construction");
-    // Skip from 9 to 11, no bets
-    gameState = gameStateArr[11];
+    gameState = gameStateArr[4];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
   }
