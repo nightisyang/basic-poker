@@ -202,6 +202,20 @@ const initDealer = function () {
     constructor(hand) {
       this.hand = [];
     }
+    // Method
+    showHand() {
+      // Empty array to store string results of dealer's hand
+      let dealerHandStrArr = [];
+
+      for (let i = 0; i < dealer.hand.length; i++) {
+        // Deconstruct hand
+        let { rank: dealerRank, suit: dealerSuit } = dealer.hand[i];
+
+        // Push results to array
+        dealerHandStrArr.push(`${dealerRank} of ${dealerSuit}`);
+      }
+      console.log(`Dealer has ${dealerHandStrArr}`);
+    }
   })();
 };
 
@@ -214,6 +228,8 @@ const initPlayers = function (nPlayers) {
 
   console.log(`${nPlayers} players initialized`);
 };
+
+// Show dealers hand
 
 /*
 // Distribute cards to players plus house
@@ -351,6 +367,7 @@ btnFlop.addEventListener("click", function () {
   if (gameState === gameStateArr[3]) {
     dealerFlop();
     console.log(dealer.hand);
+    dealer.showHand();
 
     // Skip from 3 to 5, no bets
     gameState = gameStateArr[5];
@@ -363,6 +380,7 @@ btnTurn.addEventListener("click", function () {
   if (gameState === gameStateArr[5]) {
     dealerTurn();
     console.log(dealer.hand);
+    dealer.showHand();
 
     // Skip from 5 to 7, no bets
 
@@ -376,6 +394,7 @@ btnRiver.addEventListener("click", function () {
   if (gameState === gameStateArr[7]) {
     dealerRiver();
     console.log(dealer.hand);
+    dealer.showHand();
 
     // Skip from 7 to 9, no bets
 
