@@ -194,6 +194,17 @@ const PlayerCl = class {
     this.playerNo = playerNo;
     this.hand = [];
   }
+
+  showHand() {
+    let playerHandArr = [];
+
+    for (let i = 0; i < this.hand.length; i++) {
+      let { rank: playerRank, suit: playerSuit } = this.hand[i];
+      playerHandArr.push(`${playerRank} of ${playerSuit}`);
+    }
+
+    console.log(`${this.playerNo} has ${playerHandArr}`);
+  }
 };
 
 // Initialize dealer class
@@ -357,6 +368,10 @@ btnDeal.addEventListener("click", function () {
     dealCard(activePlayers);
     dealCard(activePlayers);
     console.log(...players);
+
+    for (let i = 0; i < players.length; i++) {
+      players[i].showHand();
+    }
     gameState = gameStateArr[3];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
