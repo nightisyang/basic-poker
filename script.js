@@ -7,6 +7,8 @@ const btnInit = document.querySelector(".btn-init");
 const btnPlayers = document.querySelector(".btn-players");
 const btnDeal = document.querySelector(".btn-deal");
 const btnFlop = document.querySelector(".btn-flop");
+const btnTurn = document.querySelector(".btn-turn");
+const btnRiver = document.querySelector(".btn-river");
 const btnReset = document.querySelector(".btn-reset");
 
 // Design a game of poker
@@ -233,6 +235,7 @@ const initPlayers = function (nPlayers) {
 // Object destructuring
 */
 
+// Deal cards to players
 const dealCard = function (activePlayers) {
   // put card into player and delete card
 
@@ -243,6 +246,7 @@ const dealCard = function (activePlayers) {
   }
 };
 
+// Dealer flop
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -250,6 +254,7 @@ const dealerFlop = function () {
   deck.splice(0, 3);
 };
 
+// Dealer Turn
 const dealerTurn = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -257,10 +262,12 @@ const dealerTurn = function () {
   deck.splice(0, 1);
 };
 
-const dealerRiver = dealerTurn;
+// Dearler River
+const dealerRiver = function () {
+  dealerTurn();
+};
 
 // To initialize game, generate deck and shuffle
-
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
     generateDeck(suit, rank);
@@ -288,6 +295,7 @@ const initGame = function () {
   }
 };
 
+// DOM
 btnInit.addEventListener("click", initGame);
 
 btnPlayers.addEventListener("click", function () {
@@ -344,7 +352,34 @@ btnFlop.addEventListener("click", function () {
     dealerFlop();
     console.log(dealer.hand);
 
-    gameState = gameStateArr[4];
+    // Skip from 3 to 5, no bets
+    gameState = gameStateArr[5];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnTurn.addEventListener("click", function () {
+  if (gameState === gameStateArr[5]) {
+    dealerTurn();
+    console.log(dealer.hand);
+
+    // Skip from 5 to 7, no bets
+
+    gameState = gameStateArr[7];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnRiver.addEventListener("click", function () {
+  if (gameState === gameStateArr[7]) {
+    dealerRiver();
+    console.log(dealer.hand);
+
+    // Skip from 7 to 9, no bets
+
+    gameState = gameStateArr[9];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
   }
