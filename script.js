@@ -7,11 +7,7 @@ const btnInit = document.querySelector(".btn-init");
 const btnPlayers = document.querySelector(".btn-players");
 const btnDeal = document.querySelector(".btn-deal");
 const btnFlop = document.querySelector(".btn-flop");
-const btnTurn = document.querySelector(".btn-turn");
-const btnRiver = document.querySelector(".btn-river");
-const btnEval = document.querySelector(".btn-eval");
 const btnReset = document.querySelector(".btn-reset");
-let textbox = document.querySelector(".textarea");
 
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
@@ -68,12 +64,6 @@ gameState = gameStateArr[0];
 
 console.log(gameStateArr);
 
-function addTextBox(text) {
-  textbox.value += text;
-}
-
-addTextBox("welcome!");
-
 const resetGame = function () {
   gameState = gameStateArr[0];
   deck = [];
@@ -83,7 +73,7 @@ const resetGame = function () {
 };
 
 const suit = ["Diamonds", "Spade", "Hearts", "Clubs"];
-const rank = [2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King", "Ace"];
+const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
 
 // const generateCards = function (suit, rank) {
 //   for (let i = 0; i < suit.length; ++i) {
@@ -412,6 +402,7 @@ const Evaluate = class {
     //   }
     // }
   }
+
 };
 
 // Initialize dealer class
@@ -445,10 +436,8 @@ const initPlayers = function (nPlayers) {
     players[i] = new PlayerCl(`Player ${i + 1}`);
   }
 
-  addTextBox(`\n${nPlayers} players initialized`);
+  console.log(`${nPlayers} players initialized`);
 };
-
-// Show dealers hand
 
 /*
 // Distribute cards to players plus house
@@ -470,7 +459,6 @@ const initPlayers = function (nPlayers) {
 // Object destructuring
 */
 
-// Deal cards to players
 const dealCard = function (activePlayers) {
   // put card into player and delete card
 
@@ -481,7 +469,6 @@ const dealCard = function (activePlayers) {
   }
 };
 
-// Dealer flop
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -489,7 +476,6 @@ const dealerFlop = function () {
   deck.splice(0, 3);
 };
 
-// Dealer Turn
 const dealerTurn = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -497,15 +483,12 @@ const dealerTurn = function () {
   deck.splice(0, 1);
 };
 
-// Dearler River
-const dealerRiver = function () {
-  dealerTurn();
-};
+const dealerRiver = dealerTurn;
 
 // To initialize game, generate deck and shuffle
+
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
-    addTextBox("\nInitializing game");
     generateDeck(suit, rank);
 
     fisYatesShuff();
@@ -516,14 +499,12 @@ const initGame = function () {
     const countdown = setInterval(function () {
       console.log(counter);
       counter--;
-      addTextBox(".");
 
-      if (counter < 1) {
-        addTextBox("\nDone, lets play!\nSelect number of players");
+      if (counter < 0) {
+        console.log("Done, lets play!");
         clearInterval(countdown);
       }
     }, 1000);
-
     console.log(deck);
 
     // Change game state after initialization
@@ -636,7 +617,7 @@ btnPlayers.addEventListener("click", function () {
 
     // Function to check validitity of returned value for number of players
     function checkValue() {
-      numPlayers = Number(prompt("How many players? (1 - 4)", "4"));
+      numPlayers = Number(prompt("How many players? (1 - 4)"));
 
       // check if value in prompt is valid/true
       if (Number.isInteger(numPlayers) && numPlayers >= 1 && numPlayers <= 4) {
@@ -668,10 +649,7 @@ btnDeal.addEventListener("click", function () {
     // First deal, initial number of players get dealt two cards
     dealCard(activePlayers);
     dealCard(activePlayers);
-
-    for (let i = 0; i < players.length; i++) {
-      players[i].showHand();
-    }
+    console.log(...players);
     gameState = gameStateArr[3];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
@@ -682,42 +660,6 @@ btnFlop.addEventListener("click", function () {
   if (gameState === gameStateArr[3]) {
     dealerFlop();
     console.log(dealer.hand);
-    dealer.showHand();
-
-    // Skip from 3 to 5, no bets
-    gameState = gameStateArr[5];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
-
-btnTurn.addEventListener("click", function () {
-  if (gameState === gameStateArr[5]) {
-    dealerTurn();
-    console.log(dealer.hand);
-    dealer.showHand();
-
-    // Skip from 5 to 7, no bets
-
-    gameState = gameStateArr[7];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
-
-btnRiver.addEventListener("click", function () {
-  if (gameState === gameStateArr[7]) {
-    dealerRiver();
-    console.log(dealer.hand);
-    dealer.showHand();
-
-    // Skip from 7 to 9, no bets
-
-    gameState = gameStateArr[9];
-  } else {
-    console.error(`There is an existing game in progress! Please reset!`);
-  }
-});
 
 btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
