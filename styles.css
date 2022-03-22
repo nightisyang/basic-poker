@@ -14,3 +14,12 @@ h2 {
 .para {
   text-align: center;
 }
+
+.textarea {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  resize: none;
+  width: 560px;
+  height: 350px;
+}
