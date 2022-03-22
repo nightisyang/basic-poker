@@ -25,6 +25,8 @@ let deck = [];
 let players = [];
 let dealer;
 let activePlayers;
+let evalPlayer = [];
+let gameState;
 
 const gameStateArr = [
   "reset",
@@ -41,7 +43,7 @@ const gameStateArr = [
   "winner",
 ];
 
-let gameState = gameStateArr[0];
+gameState = gameStateArr[0];
 
 // Diamonds, Spade, Hearts, Clubs
 // Ace, 1-to-10, J, Q, K
@@ -108,7 +110,11 @@ const rank = [2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King", "Ace"];
 const generateDeck = function (suit, rank) {
   for (let n = 0; n < suit.length; n++) {
     for (let i = 0; i < rank.length; i++) {
-      deck.push({ suit: suit[n], rank: rank[i] });
+      deck.push({
+        suit: suit[n],
+        rank: rank[i],
+        indexOfRank: rank.indexOf(rank[i]),
+      });
     }
   }
 };
@@ -215,25 +221,196 @@ const PlayerCl = class {
     addTextBox(`\n${this.playerNo} has${playerHandArr}`);
     return playerHandArr;
   }
+};
 
-  rearrangeRank() {
-    let playerRankArranged = [];
-
-    for (let i = 0; i < this.hand.length; i++) {
-      let { rank: playerRank } = this.hand[i];
-      playerRankArranged.push(playerRank);
-    }
-    return playerRankArranged;
+// Evaluate Class prototype
+const Evaluate = class {
+  constructor(player, cards, arrIndexOfRank, arrSuit, arrRank) {
+    (this.player = player),
+      (this.cards = []),
+      (this.arrIndexOfRank = []),
+      (this.arrSuit = []),
+      (this.arrRank = []);
   }
 
-  rearrangeSuit() {
-    let playerSuitArranged = [];
+  // METHODS
+  findOutcomes() {
+    // let indexArr = [];
+    // let emptyArr = [];
+    // let decon = this.cards[0]; // <----- because of how the array was constructed
+    // for (let i = 0; i < decon.length; i++) {
+    //   const { suit, rank, indexOfRank } = decon[i];
+    //   this.arrindexOfRank.push(indexOfRank);
+    // }
 
-    for (let i = 0; i < this.hand.length; i++) {
-      let { rank: playerRank, suit: playerSuit } = this.hand[i];
-      playerSuitArranged.push(playerSuit);
+    this.findStraight();
+    this.findFlush();
+    this.findRankDuplicates();
+    this.findFourOfAKind();
+    this.findThreeOfAKind();
+  }
+
+  findFourOfAKind() {
+    let cardCompare = [[], [], [], []];
+    let fourOfAKind;
+
+    // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
+    for (let i = 0; i < 4; i++) {
+      // compare initial card to other card, return value to card1to2 etc
+      for (let n = i + 1; n < i + 4; n++)
+        if (this.arrRank[i] !== this.arrRank[n]) {
+          cardCompare[i].push(false);
+        } else if (this.arrRank[i] === this.arrRank[n]) {
+          cardCompare[i].push(true);
+        }
+      // && this.arrRank[i] === this.arrRank[i + 2] &&  this.arrRank[i] === this.arrRank[i + 3])
     }
-    return playerSuitArranged;
+    // console.error("Four of a kind");
+    // console.log(cardCompare);
+
+    for (let i = 0; i < cardCompare.length; i++) {
+      let frame = cardCompare[i];
+      if (frame.includes(false) === false) {
+        console.log(
+          `${this.player} has four of a kind in ${this.arrRank[i]} of ${
+            this.arrSuit[i]
+          }, ${this.arrRank[i + 1]} of ${this.arrSuit[i + 1]}, ${
+            this.arrRank[i + 2]
+          } of ${this.arrSuit[i + 2]} and ${this.arrRank[i + 4]} of ${
+            this.arrSuit[i + 4]
+          }`
+        );
+      }
+    }
+
+    // console.log(cardCompare);
+    // console.log(fourOfAKind);
+  }
+
+  findThreeOfAKind() {
+    let cardCompare = [[], [], [], [], []];
+    let threeOfAKind;
+
+    // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
+    for (let i = 0; i < 5; i++) {
+      // compare initial card to other card, return value to card1to2 etc
+      for (let n = i + 1; n < i + 3; n++)
+        if (this.arrRank[i] !== this.arrRank[n]) {
+          cardCompare[i].push(false);
+        } else if (this.arrRank[i] === this.arrRank[n]) {
+          cardCompare[i].push(true);
+        }
+      // && this.arrRank[i] === this.arrRank[i + 2] &&  this.arrRank[i] === this.arrRank[i + 3])
+    }
+    // console.error("Three of a kind");
+    // console.log(cardCompare);
+
+    for (let i = 0; i < cardCompare.length; i++) {
+      let frame = cardCompare[i];
+      if ((frame[0] && frame[1]) === true) {
+        console.log(
+          `${this.player} has three of a kind in ${this.arrRank[i]} of ${
+            this.arrSuit[i]
+          }, ${this.arrRank[i + 1]} of ${this.suit[i + 1]}, ${
+            this.arrRank[i + 2]
+          } of ${this.arrSuit[i + 2]}`
+        );
+      }
+    }
+  }
+
+  findStraight() {
+    // Search through array if all 5 numbers are continuous
+
+    let straight;
+
+    for (let i = 0; i < this.arrIndexOfRank.length - 1; i++) {
+      if (this.arrIndexOfRank[i] + 1 !== this.arrIndexOfRank[i + 1]) {
+        straight = false;
+        return;
+        // return console.log(
+        //   `${this.player} doesn't have a straight! ${[...this.arrRank]}`
+        // );
+      } else if (this.arrIndexOfRank[i] + 1 === this.arrIndexOfRank[i + 1]) {
+        straight = true;
+      }
+    }
+
+    if ((straight = true)) {
+      console.log(`${this.player} has a straight! ${[...this.arrRank]}`);
+    }
+  }
+
+  findFlush() {
+    let flush;
+
+    for (let i = 0; i < this.arrSuit.length; i++) {
+      if (this.arrSuit[0] !== this.arrSuit[i]) {
+        flush = false;
+        // console.log(`${this.player} doesn't have a flush ${[...this.arrSuit]}`);
+        return;
+      } else if (this.arrSuit[0] === this.arrSuit[i]) {
+        flush = true;
+      }
+    }
+
+    if ((flush = true)) {
+      console.log(`${this.player} has a flush ${[...this.arrSuit]}`);
+    }
+  }
+
+  findRankDuplicates() {
+    const makeSet = new Set(this.arrRank);
+    // console.log(...makeSet);
+
+    const cardDiff = this.arrSuit.length - makeSet.size;
+
+    if (cardDiff === 0) {
+      console.log(`${this.player} doesn't have any rank pair`);
+    } else if (cardDiff === 1) {
+      console.log(`${this.player} has ${cardDiff} rank pair`);
+    } else if (cardDiff === 2) {
+      console.log(`${this.player} has ${cardDiff} rank pair`);
+    } else if (cardDiff === 3) {
+      console.log(`${this.player} has ${cardDiff} rank pair`);
+    }
+
+    let cardCompare = [[], [], [], [], [], []];
+    let twoOfAKind;
+
+    // Six frames cards [0 to 1], [1 to 2], [2 to 3], [3 to 4], [4 to 5], [5 to 6]
+    for (let i = 0; i < 6; i++) {
+      // compare initial card to other card, return value to card1to2 etc
+      for (let n = i + 1; n < i + 2; n++)
+        if (this.arrRank[i] !== this.arrRank[n]) {
+          cardCompare[i].push(false);
+        } else if (this.arrRank[i] === this.arrRank[n]) {
+          cardCompare[i].push(true);
+        }
+    }
+    // console.error("Two of a kind");
+    // console.log(cardCompare);
+
+    for (let i = 0; i < cardCompare.length; i++) {
+      let frame = cardCompare[i];
+      if (frame[0] === true) {
+        console.log(
+          `${this.player} has two of a kind in ${this.arrRank[i]} of ${
+            this.arrSuit[i]
+          } ${this.arrRank[i + 1]} of ${this.arrSuit[i + 1]}`
+        );
+      }
+    }
+
+    // for (let i = 0; i < cardCompare.length; i++) {
+    //   if (cardCompare[i].includes(true) === true) {
+    //     console.error(
+    //       `${this.player} has ${this.arrRank[i]} of ${this.arrSuit[i]} pair`
+    //     );
+    //     //   return;
+    //     // } else console.error(`${this.player} HAS TWOOOOO OF A KIND!`);
+    //   }
+    // }
   }
 };
 
@@ -258,26 +435,6 @@ const initDealer = function () {
       console.log(`Dealer has${dealerHandStrArr}`);
       addTextBox(`\nDealer has${dealerHandStrArr}`);
     }
-
-    rearrangeRank() {
-      let dealerRankArranged = [];
-
-      for (let i = 0; i < this.hand.length; i++) {
-        let { rank: dealerRank } = this.hand[i];
-        dealerRankArranged.push(dealerRank);
-      }
-      return dealerRankArranged;
-    }
-
-    rearrangeSuit() {
-      let dealerSuitArranged = [];
-
-      for (let i = 0; i < this.hand.length; i++) {
-        let { rank: dealerRank, suit: dealerSuit } = this.hand[i];
-        dealerSuitArranged.push(dealerSuit);
-      }
-      return dealerSuitArranged;
-    }
   })();
 };
 
@@ -285,7 +442,7 @@ const initDealer = function () {
 const initPlayers = function (nPlayers) {
   // Initialize n number of players
   for (let i = 0; i < nPlayers; i++) {
-    players[i] = new PlayerCl(`player ${i + 1}`);
+    players[i] = new PlayerCl(`Player ${i + 1}`);
   }
 
   addTextBox(`\n${nPlayers} players initialized`);
@@ -424,42 +581,40 @@ const handRanking = [
 // Then sort cards, check if there are any sequential ranks, check if there are pairs/duplicates
 
 const evaluateCards = function () {
-  // create new array [rank] and [suit] for each player including dealer's cards
-  // or not necessary, just access from player[i].hand[i].rank, player[i].hand[i].rank + dealer.hand.rank[i]
-  let playersRank = [];
-  let playersSuit = [];
-  let playersRankIndexOf = [];
-  let playersRankIndexOfSorted = [];
-  let playersSuitSorted = [];
+  // Implement as object instead
 
-  // for all players
+  // create new object and concat with dealer's hand
   for (let i = 0; i < players.length; i++) {
-    playersRank.push(players[i].rearrangeRank());
-    playersSuit.push(players[i].rearrangeSuit());
+    evalPlayer[i] = new Evaluate(players[i].playerNo, [], []);
   }
 
-  // push dealer's card into array
-  for (let i = 0; i < playersRank.length; i++) {
-    playersRank[i].push(...dealer.rearrangeRank());
+  // push hands into evalPlayer.cards
+  for (let i = 0; i < players.length; i++) {
+    for (let n = 0; n < players[i].hand.length; n++) {
+      evalPlayer[i].cards.push(players[i].hand[n]);
+    }
+    evalPlayer[i].cards.push(...dealer.hand);
   }
 
-  for (let i = 0; i < playersSuit.length; i++) {
-    playersSuit[i].push(...dealer.rearrangeSuit());
-  }
-
-  // reassign card rank into indexOf
-  for (let i = 0; i < playersRank.length; i++) {
-    playersRankIndexOf[i] = [];
-    playersRank[i].forEach(function (curr, index, arr) {
-      playersRankIndexOf[i].push(rank.indexOf(curr));
+  // sort ascending to indexOfRank
+  for (let i = 0; i < players.length; i++) {
+    evalPlayer[i].cards.sort(function (a, b) {
+      return a.indexOfRank - b.indexOfRank;
     });
   }
 
-  // sort rank, remember to keep suit sorted accordingly
-  console.log(playersRank, playersSuit);
-  console.log(playersRankIndexOf);
-};
+  // make new array just for index
+  for (let i = 0; i < players.length; i++) {
+    for (let n = 0; n < evalPlayer[i].cards.length; n++) {
+      const { suit, rank, indexOfRank } = evalPlayer[i].cards[n];
+      evalPlayer[i].arrIndexOfRank.push(indexOfRank);
+      evalPlayer[i].arrSuit.push(suit);
+      evalPlayer[i].arrRank.push(rank);
+    }
+  }
 
+  console.log(evalPlayer[0], evalPlayer[1], evalPlayer[2], evalPlayer[3]);
+};
 // sort cards, remmeber to have [suit] sorted accordingly
 //check if cards are in sequence or any pairs  are present
 // return player score according to handRanking
@@ -567,6 +722,10 @@ btnRiver.addEventListener("click", function () {
 btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
     evaluateCards();
+
+    for (let i = 0; i < evalPlayer.length; i++) {
+      evalPlayer[i].findOutcomes();
+    }
     addTextBox("\nCard evaluation logic still under construction");
     // Skip from 9 to 11, no bets
     gameState = gameStateArr[11];
@@ -579,3 +738,25 @@ btnReset.addEventListener("click", function () {
   resetGame();
   console.log("Game reset, please initialize game to play!");
 });
+
+const arrflushTest = ["Clubs", "Clubs", "Clubs", "Clubs", "Clubs"];
+
+const findFlush = function () {
+  let flush;
+
+  for (let i = 0; i < arrflushTest.length; i++) {
+    if (arrflushTest[0] !== arrflushTest[i]) {
+      flush = false;
+      console.log(`Test array doesn't have a flush ${[...arrflushTest]}`);
+      return;
+    } else if (arrflushTest[0] === arrflushTest[i]) {
+      flush = true;
+    }
+  }
+
+  if ((flush = true)) {
+    console.log(`Test array has a flush ${[...arrflushTest]}`);
+  }
+};
+
+findFlush();
