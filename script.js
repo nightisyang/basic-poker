@@ -7,7 +7,11 @@ const btnInit = document.querySelector(".btn-init");
 const btnPlayers = document.querySelector(".btn-players");
 const btnDeal = document.querySelector(".btn-deal");
 const btnFlop = document.querySelector(".btn-flop");
+const btnTurn = document.querySelector(".btn-turn");
+const btnRiver = document.querySelector(".btn-river");
+const btnEval = document.querySelector(".btn-eval");
 const btnReset = document.querySelector(".btn-reset");
+let textbox = document.querySelector(".textarea");
 
 // Design a game of poker
 // Implement logic of shuffling, distributing cards to 4 players plus house
@@ -64,6 +68,12 @@ gameState = gameStateArr[0];
 
 console.log(gameStateArr);
 
+function addTextBox(text) {
+  textbox.value += text;
+}
+
+addTextBox("welcome!");
+
 const resetGame = function () {
   gameState = gameStateArr[0];
   deck = [];
@@ -73,7 +83,7 @@ const resetGame = function () {
 };
 
 const suit = ["Diamonds", "Spade", "Hearts", "Clubs"];
-const rank = ["Ace", 2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King"];
+const rank = [2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King", "Ace"];
 
 // const generateCards = function (suit, rank) {
 //   for (let i = 0; i < suit.length; ++i) {
@@ -402,7 +412,6 @@ const Evaluate = class {
     //   }
     // }
   }
-
 };
 
 // Initialize dealer class
@@ -436,8 +445,10 @@ const initPlayers = function (nPlayers) {
     players[i] = new PlayerCl(`Player ${i + 1}`);
   }
 
-  console.log(`${nPlayers} players initialized`);
+  addTextBox(`\n${nPlayers} players initialized`);
 };
+
+// Show dealers hand
 
 /*
 // Distribute cards to players plus house
@@ -459,6 +470,7 @@ const initPlayers = function (nPlayers) {
 // Object destructuring
 */
 
+// Deal cards to players
 const dealCard = function (activePlayers) {
   // put card into player and delete card
 
@@ -469,6 +481,7 @@ const dealCard = function (activePlayers) {
   }
 };
 
+// Dealer flop
 const dealerFlop = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -476,6 +489,7 @@ const dealerFlop = function () {
   deck.splice(0, 3);
 };
 
+// Dealer Turn
 const dealerTurn = function () {
   // take 3 cards from deck and put in dealers hand
 
@@ -483,12 +497,15 @@ const dealerTurn = function () {
   deck.splice(0, 1);
 };
 
-const dealerRiver = dealerTurn;
+// Dearler River
+const dealerRiver = function () {
+  dealerTurn();
+};
 
 // To initialize game, generate deck and shuffle
-
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
+    addTextBox("\nInitializing game");
     generateDeck(suit, rank);
 
     fisYatesShuff();
@@ -499,12 +516,14 @@ const initGame = function () {
     const countdown = setInterval(function () {
       console.log(counter);
       counter--;
+      addTextBox(".");
 
-      if (counter < 0) {
-        console.log("Done, lets play!");
+      if (counter < 1) {
+        addTextBox("\nDone, lets play!\nSelect number of players");
         clearInterval(countdown);
       }
     }, 1000);
+
     console.log(deck);
 
     // Change game state after initialization
@@ -617,7 +636,7 @@ btnPlayers.addEventListener("click", function () {
 
     // Function to check validitity of returned value for number of players
     function checkValue() {
-      numPlayers = Number(prompt("How many players? (1 - 4)"));
+      numPlayers = Number(prompt("How many players? (1 - 4)", "4"));
 
       // check if value in prompt is valid/true
       if (Number.isInteger(numPlayers) && numPlayers >= 1 && numPlayers <= 4) {
@@ -649,7 +668,10 @@ btnDeal.addEventListener("click", function () {
     // First deal, initial number of players get dealt two cards
     dealCard(activePlayers);
     dealCard(activePlayers);
-    console.log(...players);
+
+    for (let i = 0; i < players.length; i++) {
+      players[i].showHand();
+    }
     gameState = gameStateArr[3];
   } else {
     console.error(`There is an existing game in progress! Please reset!`);
@@ -660,6 +682,42 @@ btnFlop.addEventListener("click", function () {
   if (gameState === gameStateArr[3]) {
     dealerFlop();
     console.log(dealer.hand);
+    dealer.showHand();
+
+    // Skip from 3 to 5, no bets
+    gameState = gameStateArr[5];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnTurn.addEventListener("click", function () {
+  if (gameState === gameStateArr[5]) {
+    dealerTurn();
+    console.log(dealer.hand);
+    dealer.showHand();
+
+    // Skip from 5 to 7, no bets
+
+    gameState = gameStateArr[7];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
+
+btnRiver.addEventListener("click", function () {
+  if (gameState === gameStateArr[7]) {
+    dealerRiver();
+    console.log(dealer.hand);
+    dealer.showHand();
+
+    // Skip from 7 to 9, no bets
+
+    gameState = gameStateArr[9];
+  } else {
+    console.error(`There is an existing game in progress! Please reset!`);
+  }
+});
 
 btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
@@ -681,24 +739,35 @@ btnReset.addEventListener("click", function () {
   console.log("Game reset, please initialize game to play!");
 });
 
-const arrflushTest = ["Clubs", "Clubs", "Clubs", "Clubs", "Clubs"];
+const arr3OfAKind = [1, 1, 1, 2, 2, 2, 3];
 
-const findFlush = function () {
-  let flush;
+const findThreeOfAKind = function () {
+  let cardCompare = [[], [], [], [], []];
+  let threeOfAKind;
 
-  for (let i = 0; i < arrflushTest.length; i++) {
-    if (arrflushTest[0] !== arrflushTest[i]) {
-      flush = false;
-      console.log(`Test array doesn't have a flush ${[...arrflushTest]}`);
-      return;
-    } else if (arrflushTest[0] === arrflushTest[i]) {
-      flush = true;
+  // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
+  for (let i = 0; i < 5; i++) {
+    // compare initial card to other card, return value to card1to2 etc
+    for (let n = i + 1; n < i + 3; n++)
+      if (arr3OfAKind[i] !== arr3OfAKind[n]) {
+        cardCompare[i].push(false);
+      } else if (arr3OfAKind[i] === arr3OfAKind[n]) {
+        cardCompare[i].push(true);
+      }
+    // && arr3OfAKind[i] === arr3OfAKind[i + 2] &&  arr3OfAKind[i] === arr3OfAKind[i + 3])
+  }
+  // console.error("Three of a kind");
+  // console.log(cardCompare);
+
+  for (let i = 0; i < cardCompare.length; i++) {
+    let frame = cardCompare[i];
+    if ((frame[0] && frame[1]) === true) {
+      console.log(
+        `Test array has three of a kind in ${arr3OfAKind[i]}, ${
+          arr3OfAKind[i + 1]
+        }, ${arr3OfAKind[i + 2]}`
+      );
     }
   }
-
-  if ((flush = true)) {
-    console.log(`Test array has a flush ${[...arrflushTest]}`);
-  }
 };
-
-findFlush();
+findThreeOfAKind();
