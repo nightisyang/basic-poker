@@ -235,14 +235,23 @@ const Evaluate = class {
 
   // METHODS
   findOutcomes() {
-    // Royal flush - same suit, straight starting with 10
-    this.findStraight(); //0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card
+    this.findStraight(); // 0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card (royal)
     this.findFlush();
     this.findRankDuplicates(); // returns 0 - no duplicates, 1 - 1 pair, 2 - 2 distinct pairs, 3 - three of a kind
     this.findFourOfAKind();
     // this.findThreeOfAKind();
     this.findHighest();
     // this.findPair();
+
+    // Royal flush - same suit, straight starting with 10
+    if (this.findFlush() === true && this.findStraight() === 2)
+      console.log(`${this.player} has a royal flush!`);
+
+    // Straight flush - same suit, 5 straight cards
+    if (this.findFlush() === true && this.findStraight() === 1)
+      console.log(`${this.player} has a straight flush!`);
+
+    if (this.findStraight === 1) console.log(`${this.player} has a straight!`);
   }
 
   findFourOfAKind() {
@@ -463,7 +472,11 @@ const Evaluate = class {
       let frame = cardCompare[i];
 
       // Three of a kind
-      if (frame[0] === true && this.arrRank[i] === this.arrRank[i + 2]) {
+      if (
+        frame[0] === true &&
+        this.arrRank[i] === this.arrRank[i + 2] &&
+        cardDiff === 2
+      ) {
         whichKind = 3;
 
         // find and log 3 of a kind
