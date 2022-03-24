@@ -239,45 +239,48 @@ const Evaluate = class {
     this.findFlush();
     this.findRankDuplicates(); // returns 0 - no duplicates, 1 - 1 pair, 2 - 2 distinct pairs, 3 - three of a kind
     this.findFourOfAKind();
-    // this.findThreeOfAKind();
+    this.findThreeOfAKind();
     // this.findHighest();
-    // this.findPair();
+    this.findPair();
 
-    // Royal flush - same suit, straight starting with 10
-    if (this.findFlush() === true && this.findStraight() === 2)
-      console.log(`${this.player} has a royal flush!`);
+    // // Royal flush - same suit, straight starting with 10
+    // if (this.findFlush === true && this.findStraight === 2)
+    //   console.log(`${this.player} has a royal flush!`);
 
-    // Straight flush - same suit, 5 straight cards
-    if (this.findFlush() === true && this.findStraight() === 1)
-      console.log(`${this.player} has a straight flush!`);
+    // // Straight flush - same suit, 5 straight cards
+    // if (this.findFlush === true && this.findStraight === 1)
+    //   console.log(`${this.player} has a straight flush!`);
 
-    if (this.findStraight === 1) console.log(`${this.player} has a straight!`);
+    // if (this.findFourOfAKind === true)
+    //   console.log(`${this.player} has a 4 of a kind!`);
+
+    // if (this.findRankDuplicates === 4)
+    //   console.log(`${this.player} has a full house!`);
+
+    // if (this.findFlush === true) console.log(`${this.player} has a flush!`);
+    // if (this.findStraight === 1) console.log(`${this.player} has a straight!`);
+
+    // if (this.findRankDuplicates === 3)
+    //   console.log(`${this.player} has three of a kind!`);
+    // if (this.findRankDuplicates === 2)
+    //   console.log(`${this.player} has two pairs!`);
+    // if (this.findRankDuplicates === 1)
+    //   console.log(`${this.player} has one pair!`);
+
+    // if (
+    //   (this.findFlush === this.findFourOfAKind) === false &&
+    //   (this.findStraight === this.findRankDuplicates) === 0
+    // )
+    //   this.findHighest();
   }
 
   findFourOfAKind() {
-    let cardCompare = [[], [], [], []];
-
     // Always false until proven true
     let fourOfAKind = false;
 
     // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
-    for (let i = 0; i < 4; i++) {
-      // compare initial card to other card, return value to card1to2 etc
-      for (let n = i + 1; n < i + 4; n++)
-        if (this.arrRank[i] !== this.arrRank[n]) {
-          cardCompare[i].push(false);
-        } else if (this.arrRank[i] === this.arrRank[n]) {
-          cardCompare[i].push(true);
-        }
-    }
-
-    for (let i = 0; i < cardCompare.length; i++) {
-      let frame = cardCompare[i];
-      if (frame.includes(false) === false) {
-        // If there is four of a kind make fourOfAKind true
-        fourOfAKind = true;
-
-        // log to console
+    this.arrRank.forEach((val, i, arr) => {
+      if (val === val[i + 1] && val === val[i + 2] && val === val[i + 3]) {
         console.log(
           `${this.player} has four of a kind in ${this.arrRank[i]} of ${
             this.arrSuit[i]
@@ -288,43 +291,30 @@ const Evaluate = class {
           }`
         );
       }
-    }
+      fourOfAKind = true;
+    });
 
     return fourOfAKind;
   }
 
   findThreeOfAKind() {
-    let cardCompare = [[], [], [], [], []];
-
     // Always false until proven true
     let threeOfAKind = false;
 
     // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
     for (let i = 0; i < 5; i++) {
-      // compare initial card to other card, return value to card1to2 etc
-      for (let n = i + 1; n < i + 3; n++)
-        if (this.arrRank[i] !== this.arrRank[n]) {
-          cardCompare[i].push(false);
-        } else if (this.arrRank[i] === this.arrRank[n]) {
-          cardCompare[i].push(true);
+      this.arrRank.forEach((val, i, arr) => {
+        if (val === arr[i + 1] && val === arr[i + 2]) {
+          console.log(
+            `${this.player} has three of a kind in ${this.arrRank[i]} of ${
+              this.arrSuit[i]
+            }, ${this.arrRank[i + 1]} of ${this.arrSuit[i + 1]}, ${
+              this.arrRank[i + 2]
+            } of ${this.arrSuit[i + 2]}`
+          );
         }
-    }
-
-    for (let i = 0; i < cardCompare.length; i++) {
-      let frame = cardCompare[i];
-      if ((frame[0] && frame[1]) === true) {
-        // If there is three of a kind make threeOfAKind true
         threeOfAKind = true;
-
-        // log to console
-        console.log(
-          `${this.player} has three of a kind in ${this.arrRank[i]} of ${
-            this.arrSuit[i]
-          }, ${this.arrRank[i + 1]} of ${this.arrSuit[i + 1]}, ${
-            this.arrRank[i + 2]
-          } of ${this.arrSuit[i + 2]}`
-        );
-      }
+      });
     }
 
     return threeOfAKind;
@@ -333,36 +323,22 @@ const Evaluate = class {
   findPair() {
     let cardCompare = [[], [], [], [], [], []];
     let twoOfAKind = false;
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
 
     // Six frames cards [0 to 1], [1 to 2], [2 to 3], [3 to 4], [4 to 5], [5 to 6]
-    for (let i = 0; i < 6; i++) {
-      // compare initial card to other card, return value to card1to2 etc
-      for (let n = i + 1; n < i + 2; n++)
-        if (this.arrRank[i] !== this.arrRank[n]) {
-          cardCompare[i].push(false);
-        } else if (this.arrRank[i] === this.arrRank[n]) {
-          cardCompare[i].push(true);
+    // for (let i = 0; i < 6; i++) {
+    this.arrRank.forEach(function (val, i, arr) {
+      if (val === arr[i + 1]) {
+        for (let n = i; n < 2; n++) {
+          console.log(
+            `${_player} has ${_arrRank[n]} of ${_arrSuit[n]} standalone`
+          );
         }
-    }
-    // console.error("Two of a kind");
-    // console.log(cardCompare);
-
-    for (let i = 0; i < cardCompare.length; i++) {
-      let frame = cardCompare[i];
-      if (frame[0] === true) {
-        // If there is a pair, make twoOfAKind true
-        twoOfAKind = true;
-
-        // log to console
-        console.log(
-          `${this.player} has two of a kind in ${this.arrRank[i]} of ${
-            this.arrSuit[i]
-          } ${this.arrRank[i + 1]} of ${this.arrSuit[i + 1]}`
-        );
       }
-    }
-
-    return twoOfAKind;
+      twoOfAKind = true;
+    });
   }
 
   findStraight() {
@@ -469,6 +445,19 @@ const Evaluate = class {
       let _arrSuit = this.arrSuit;
       let _player = this.player;
 
+      // cardDiff === 4 only when there's two sets of 3 of a kind
+      if (frame[0] === true && cardDiff === 4) {
+        // Find the card that is the same in position i and i+2 essentially 3 of a kind
+        if (_arrRank[i] === _arrRank[i + 2]) {
+          for (let n = i; n < i + 3; n++) {
+            str += ` ${_arrRank[n]} of ${_arrSuit[n]}`;
+          }
+        }
+
+        whichKind = 4;
+        console.log(`${_player} has full house${str}!`);
+      }
+
       // How to distinguish full house and 3 paris? and to select for the highest 2 pair out of 3.
       if (frame[0] === true && cardDiff === 3) {
         // let foundThreeOfAKind = false;
@@ -503,31 +492,10 @@ const Evaluate = class {
 
           if (frame[0] === true && _arrRank[i] !== _arrRank[i + 2]) {
             for (let n = i; n < i + 2; n++)
-              arrSelect.push(` ${_arrRank[i]} of ${_arrSuit[i]}`);
-            // // find the first pair (n)
-            // for (let n = i; n < i + 2; n++) {
-            //   str += ` ${_arrRank[n]} of ${_arrSuit[n]}`;
-            // }
-            // // find second pair ( i + 2)
-            // for (let x = i + 2; x < cardCompare.length; x++) {
-            //   let secondFrame = cardCompare[x];
-            //   if (secondFrame[0] === true) {
-            //     for (let y = x; y < x + 2; y++) {
-            //       str += ` ${_arrRank[y]} of ${_arrSuit[y]}`;
+              arrSelect.push(` ${_arrRank[n]} of ${_arrSuit[n]}`);
           }
-          // }
-          // }
-          // redundant
-          // // find third pair (i + 4)
-          // for (let z = i + 4; z < cardCompare.length; z++) {
-          //   let thirdFrame = cardCompare[z];
-          //   if (thirdFrame[0] === true) {
-          //     for (let a = z; a < z + 2; a++) {
-          //       str += ` ${_arrRank[a]} of ${_arrSuit[a]}`;
-          //     }
-          //   }
-          // }
 
+          // this is required as there are some cases where the card sequence starts with pairs instead of three of a kind and when the for loop proceeds, it identifies three of a kind resulting in out results.
           if (arrSelect.length === 6) {
             arrSelect.forEach((ele, index) => {
               if (index > 1) {
@@ -940,33 +908,45 @@ btnReset.addEventListener("click", function () {
 
 const arr3OfAKind = [1, 1, 1, 2, 2, 2, 3];
 
+arr3OfAKind.forEach((val, i, arr) => {
+  if (val === arr[i + 1] && val === arr[i + 2]) {
+    console.log("test3");
+  }
+});
+
 const findThreeOfAKind = function () {
   let cardCompare = [[], [], [], [], []];
   let threeOfAKind;
 
   // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
   for (let i = 0; i < 5; i++) {
-    // compare initial card to other card, return value to card1to2 etc
-    for (let n = i + 1; n < i + 3; n++)
-      if (arr3OfAKind[i] !== arr3OfAKind[n]) {
-        cardCompare[i].push(false);
-      } else if (arr3OfAKind[i] === arr3OfAKind[n]) {
-        cardCompare[i].push(true);
+    arr3OfAKind.forEach((val, i, arr) => {
+      if ((val === val[i + 1]) === val[i + 2]) {
+        console.log(val);
+        console.log(`Test player has 3 of a kind`);
       }
+    });
+    // // compare initial card to other card, return value to card1to2 etc
+    // for (let n = i + 1; n < i + 3; n++)
+    //   if (arr3OfAKind[i] !== arr3OfAKind[n]) {
+    //     cardCompare[i].push(false);
+    //   } else if (arr3OfAKind[i] === arr3OfAKind[n]) {
+    //     cardCompare[i].push(true);
+    //   }
     // && arr3OfAKind[i] === arr3OfAKind[i + 2] &&  arr3OfAKind[i] === arr3OfAKind[i + 3])
   }
   // console.error("Three of a kind");
   // console.log(cardCompare);
 
-  for (let i = 0; i < cardCompare.length; i++) {
-    let frame = cardCompare[i];
-    if ((frame[0] && frame[1]) === true) {
-      console.log(
-        `Test array has three of a kind in ${arr3OfAKind[i]}, ${
-          arr3OfAKind[i + 1]
-        }, ${arr3OfAKind[i + 2]}`
-      );
-    }
-  }
+  //   for (let i = 0; i < cardCompare.length; i++) {
+  //     let frame = cardCompare[i];
+  //     if ((frame[0] && frame[1]) === true) {
+  //       console.log(
+  //         `Test array has three of a kind in ${arr3OfAKind[i]}, ${
+  //           arr3OfAKind[i + 1]
+  //         }, ${arr3OfAKind[i + 2]}`
+  //       );
+  //     }
+  //   }
 };
 findThreeOfAKind();
