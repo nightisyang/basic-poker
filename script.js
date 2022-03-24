@@ -240,7 +240,7 @@ const Evaluate = class {
     this.findRankDuplicates(); // returns 0 - no duplicates, 1 - 1 pair, 2 - 2 distinct pairs, 3 - three of a kind
     this.findFourOfAKind();
     // this.findThreeOfAKind();
-    this.findHighest();
+    // this.findHighest();
     // this.findPair();
 
     // Royal flush - same suit, straight starting with 10
@@ -441,6 +441,8 @@ const Evaluate = class {
     let cardCompare = [[], [], [], [], [], []];
     let whichKind = 0; // 0 false, 1 is 1 pair, 2 is 2 distinct pair, 3 is three of a kind, 4 full house (three of a kind and one pair)
     let str = "";
+    let arrSelect = [];
+    // let threeOfAKind = false;
     const makeSet = new Set(this.arrRank);
     // console.log(...makeSet);
 
@@ -448,13 +450,6 @@ const Evaluate = class {
 
     if (cardDiff === 0) {
       console.log(`${this.player} doesn't have any pairs`);
-    } else if (cardDiff === 1) {
-      // console.log(`${this.player} has ${cardDiff} rank pair`);
-    } else if (cardDiff === 2) {
-      // console.log(`${this.player} has ${cardDiff} rank pair`);
-    } else if (cardDiff === 3) {
-      whichKind = 4;
-      console.log(`${this.player} has full house!`);
     }
 
     // Six frames cards [0 to 1], [1 to 2], [2 to 3], [3 to 4], [4 to 5], [5 to 6]
@@ -470,6 +465,88 @@ const Evaluate = class {
 
     for (let i = 0; i < cardCompare.length; i++) {
       let frame = cardCompare[i];
+      let _arrRank = this.arrRank;
+      let _arrSuit = this.arrSuit;
+      let _player = this.player;
+
+      // How to distinguish full house and 3 paris? and to select for the highest 2 pair out of 3.
+      if (frame[0] === true && cardDiff === 3) {
+        // let foundThreeOfAKind = false;
+
+        // if come across three of a kind, then find the pair\
+        const findFullHouse = function () {
+          if (_arrRank[i] === _arrRank[i + 2]) {
+            for (let n = i; n < i + 3; n++) {
+              str += ` ${_arrRank[n]} of ${_arrSuit[n]}`;
+            }
+
+            for (let a = 0; a < cardCompare.length; a++) {
+              if (
+                frame[0] === true &&
+                _arrRank[a] === _arrRank[a + 1] &&
+                _arrRank[a] !== _arrRank[a + 2] &&
+                a !== i + 1
+              ) {
+                for (let n = a; n < a + 2; n++) {
+                  str += ` ${_arrRank[n]} of ${_arrSuit[n]}`;
+                }
+              }
+              // return;
+            }
+            whichKind = 4;
+            console.log(`${_player} has full house${str}!`);
+          }
+        };
+
+        const threePairTwoHighest = function () {
+          // If there's no three of a kind, then search 3 pairs and log the last 2 pairs, ignore the first pair
+
+          if (frame[0] === true && _arrRank[i] !== _arrRank[i + 2]) {
+            for (let n = i; n < i + 2; n++)
+              arrSelect.push(` ${_arrRank[i]} of ${_arrSuit[i]}`);
+            // // find the first pair (n)
+            // for (let n = i; n < i + 2; n++) {
+            //   str += ` ${_arrRank[n]} of ${_arrSuit[n]}`;
+            // }
+            // // find second pair ( i + 2)
+            // for (let x = i + 2; x < cardCompare.length; x++) {
+            //   let secondFrame = cardCompare[x];
+            //   if (secondFrame[0] === true) {
+            //     for (let y = x; y < x + 2; y++) {
+            //       str += ` ${_arrRank[y]} of ${_arrSuit[y]}`;
+          }
+          // }
+          // }
+          // redundant
+          // // find third pair (i + 4)
+          // for (let z = i + 4; z < cardCompare.length; z++) {
+          //   let thirdFrame = cardCompare[z];
+          //   if (thirdFrame[0] === true) {
+          //     for (let a = z; a < z + 2; a++) {
+          //       str += ` ${_arrRank[a]} of ${_arrSuit[a]}`;
+          //     }
+          //   }
+          // }
+
+          if (arrSelect.length === 6) {
+            arrSelect.forEach((ele, index) => {
+              if (index > 1) {
+                str += `${ele}`;
+              }
+            });
+            whichKind = 2;
+            console.log(
+              `${_player} has 3 pairs, the two highest pairs are${str}!`
+            );
+          }
+          return;
+          // }
+        };
+
+        // call functions
+        findFullHouse();
+        if (whichKind !== 4) threePairTwoHighest();
+      }
 
       // Three of a kind
       if (
@@ -487,6 +564,7 @@ const Evaluate = class {
         return;
       }
 
+      // Pair
       if (frame[0] === true && cardDiff === 1) {
         // If there is a pair, make whichKind true
         whichKind = 1;
@@ -500,7 +578,7 @@ const Evaluate = class {
         return;
       }
 
-      // if i + 2 or 3rd card isn't the same number then it's two distinct pairs
+      // Two pairs - if i + 2 or 3rd card isn't the same number then it's two distinct pairs
       if (
         frame[0] === true &&
         cardDiff === 2 &&
