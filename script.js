@@ -377,39 +377,38 @@ const Evaluate = class {
   }
 
   findStraight() {
-    // Search through array if all 5 numbers are continuous
-    let cardCompare = [[], [], []];
-    let straight = 0; // 0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card
-    let str;
+    let straight = 0;
+    let str = [];
+    let count = 0;
 
-    // Three frames cards [0 to 4], [1 to 5], [2 to 6]
-    for (let i = 0; i < this.arrIndexOfRank.length - 4; i++) {
-      for (let n = i + 1; n < i + 5; n++)
-        if (this.arrIndexOfRank[i] + 1 !== this.arrIndexOfRank[n]) {
-          cardCompare[i].push(false);
-        } else if (this.arrIndexOfRank[i] + 1 === this.arrIndexOfRank[n]) {
-          cardCompare[i].push(true);
+    this.arrRank.forEach((val, i, arr) => {
+      let plus;
+
+      for (let n = 1; n < 5; n++) {
+        plus = arr[i + n] - n;
+
+        if (val === plus) {
+          count += 1;
+          // straight = 1;
+        } else {
+          return;
         }
-    }
-
-    for (let i = 0; i < cardCompare.length; i++) {
-      let frame = cardCompare[i];
-      if (frame.includes(false) === false) {
-        // If there is straight make straight true
-        straight = 1;
-
-        // log to console
-
-        for (let n = i; n < i + 5; n++) {
-          str += ` ${this.arrRank[n]} of ${this.arrSuit[n]}`;
-        }
-
-        console.log(`${this.player} has a straight!${str}`);
       }
 
-      if (frame[0] === 8 && straight === 1) {
+      if (count == 4) straight = 1;
+
+      if (val === 8 && count === 4) {
         straight = 2;
       }
+
+      if (straight !== 0) {
+        for (let y = i; y < i + 5; y++)
+          str.push(` ${_arrRank[y]} of ${_arrSuit[y]}`);
+      }
+    });
+    if (straight === 1) {
+      // console.log(straight);
+      console.log(`${this.player} has STRAIGHTS${[...str]}`);
     }
     return straight;
   }
@@ -769,30 +768,70 @@ btnReset.addEventListener("click", function () {
   console.log("Game reset, please initialize game to play!");
 });
 
-const test = [2, 2, 10, 12, 12, 12, 12];
+const test = [4, 5, 6, 7, 8, 10, 11, 12];
 
-const findFourOfAKind = function () {
-  // Always false until proven true
-  let boolean = false;
+const findStraight = function () {
+  let straight = 0;
   let str = [];
+  let count = 0;
 
-  // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
   test.forEach((val, i, arr) => {
-    if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
-      for (let n = i; n < i + 4; n++) {
-        str.push(`${arr[n]}`);
+    let plus;
+
+    for (let n = 1; n < 5; n++) {
+      plus = arr[i + n] - n;
+
+      if (val === plus) {
+        count += 1;
+        // straight = 1;
+      } else {
+        return;
       }
+    }
+
+    if (count == 4) straight = 1;
+
+    if (val === 8 && count === 4) {
+      straight = 2;
+    }
+
+    if (straight !== 0) {
+      for (let y = i; y < i + 5; y++) str.push(` ${arr[y]}`);
     }
   });
 
+  console.log(straight);
   console.log(str);
-  if (str.length === 4) {
-    console.log(`${str} test`);
-    return boolean;
+  if (straight === 1) {
+    // console.log(straight);
+    console.log(`test has STRAIGHTS${[...str]}`);
   }
 };
 
-findFourOfAKind();
+findStraight();
+
+// const findFourOfAKind = function () {
+//   // Always false until proven true
+//   let boolean = false;
+//   let str = [];
+
+//   // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
+//   test.forEach((val, i, arr) => {
+//     if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
+//       for (let n = i; n < i + 4; n++) {
+//         str.push(`${arr[n]}`);
+//       }
+//     }
+//   });
+
+//   console.log(str);
+//   if (str.length === 4) {
+//     console.log(`${str} test`);
+//     return boolean;
+//   }
+// };
+
+// findFourOfAKind();
 
 // arr3OfAKind.forEach((val, i, arr) => {
 //   if (val === arr[i + 1] && val === arr[i + 2]) {
