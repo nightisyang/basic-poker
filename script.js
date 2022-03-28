@@ -193,12 +193,20 @@ console.log(playDeck());
 const fisYatesShuff = function () {
   let randomCard;
   let tempX;
-  for (let i = deck.length - 1; i > -1; i -= 1) {
-    randomCard = Math.floor(Math.random() * i); // Generate random no using index
-    tempX = deck[i]; // tempX is the last card, held temporarily
-    deck[i] = deck[randomCard]; // changing position, random card is placed at the end of deck
-    deck[randomCard] = tempX; // swap previous last card with random card, iterate through deck.length
-  }
+
+  const shuffle = function () {
+    for (let i = deck.length - 1; i > -1; i -= 1) {
+      randomCard = Math.floor(Math.random() * i); // Generate random no using index
+      tempX = deck[i]; // tempX is the last card, held temporarily
+      deck[i] = deck[randomCard]; // changing position, random card is placed at the end of deck
+      deck[randomCard] = tempX; // swap previous last card with random card, iterate through deck.length
+    }
+    return deck;
+  };
+
+  // double shuffle
+  shuffle();
+  shuffle();
   return deck;
 };
 
@@ -276,6 +284,9 @@ const Evaluate = class {
 
   findFourOfAKind() {
     // Always false until proven true
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
     let fourOfAKind = false;
     let str = [];
 
@@ -283,7 +294,7 @@ const Evaluate = class {
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         for (let n = i; n < i + 4; n++) {
-          str.push(`${this.arrRank[n]} of ${this.arrRank[n]}`);
+          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
         }
       }
       fourOfAKind = true;
@@ -295,6 +306,10 @@ const Evaluate = class {
 
   findThreeOfAKind() {
     // Always false until proven true
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
+
     let threeOfAKind = false;
     let str = [];
 
@@ -303,7 +318,7 @@ const Evaluate = class {
       this.arrRank.forEach((val, i, arr) => {
         if (val === arr[i + 1] && val === arr[i + 2]) {
           for (let n = i; n < i + 3; n++) {
-            str.push(`${this.arrRank[n]} of ${this.arrSuit[n]}`);
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
           }
         }
         threeOfAKind = true;
@@ -316,15 +331,12 @@ const Evaluate = class {
   }
 
   findPair() {
-    let cardCompare = [[], [], [], [], [], []];
     let pairType = 0;
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let str = [];
 
-    // Six frames cards [0 to 1], [1 to 2], [2 to 3], [3 to 4], [4 to 5], [5 to 6]
-    // for (let i = 0; i < 6; i++) {
     this.arrRank.forEach(function (val, i, arr) {
       if (val === arr[i + 1] && val !== arr[i + 2]) {
         for (let n = i; n < i + 2; n++) {
@@ -332,6 +344,9 @@ const Evaluate = class {
         }
       }
     });
+    if (str.length === 0) {
+      console.log(`${_player} has NO PAIRS, find highest card`);
+    }
     if (str.length === 2) {
       console.log(`${_player} has PAIRS ${[...str]}!`);
       pairType = 1;
@@ -347,23 +362,27 @@ const Evaluate = class {
       );
       pairType = 2;
     }
+    return pairType;
   }
 
   findFullHouse() {
     // Always false until proven true
     let fullHouse = false;
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
     let str = [];
 
     for (let i = 0; i < this.arrRank.length; i++) {
       this.arrRank.forEach((val, i, arr) => {
         if (val === arr[i + 1] && val === arr[i + 2]) {
           for (let n = i; n < i + 3; n++) {
-            str.push(`${this.arrRank[n]} of ${this.arrSuit[n]}`);
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
           }
         }
         if (val === arr[i + 1] && val !== arr[i + 2]) {
           for (let n = i; n < i + 2; n++) {
-            str.push(`${this.arrRank[n]} of ${this.arrSuit[n]}`);
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
           }
         }
       });
@@ -378,6 +397,9 @@ const Evaluate = class {
 
   findStraight() {
     let straight = 0;
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
     let str = [];
     let count = 0;
 
