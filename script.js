@@ -172,6 +172,9 @@ const Evaluate = class {
   }
 
   findAll() {
+    // Layout of function is
+    // Find this pattern/arrangement of cards, and log into a str
+    // If length of string is equals to number of expected cards, log and return results
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
@@ -206,6 +209,7 @@ const Evaluate = class {
           resultSuit.push(`${_arrSuit[n]}`);
         }
       } else {
+        // resetAll();
         return;
       }
     });
@@ -215,15 +219,15 @@ const Evaluate = class {
       this.result.bestHand = handRanking[2];
       ranking = 3;
       return ranking;
-    } else {
-      // resetAll();
     }
 
     // find full house
     let startIndex3Kind;
 
     this.arrRank.forEach((val, i, arr) => {
-      // find three similar cards
+      // two parts first find 3 of a kind, second part find pair
+
+      // first part - find three similar cards
       if (val === arr[i + 1] && val === arr[i + 2]) {
         startIndex3Kind = i;
         for (let n = i; n < i + 3; n++) {
@@ -233,9 +237,12 @@ const Evaluate = class {
           resultRank.push(`${_arrRank[n]}`);
           resultSuit.push(`${_arrSuit[n]}`);
         }
+      } else {
+        // resetAll();
+        return;
       }
 
-      // find pair
+      // second part - find pair, ignore if start index is the same as 3 of a kind, will lead to duplicate
       if (
         val === arr[i + 1] &&
         val !== arr[i + 2] &&
@@ -251,6 +258,14 @@ const Evaluate = class {
       }
     });
 
+    // log if conidtions for straight is found - logic for 3 of a kind overlaps, if str.length = 3
+    if (str.length === 3) {
+      this.result.bestHand = handRanking[6];
+      console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
+      ranking = 7;
+      return ranking;
+    }
+
     // log if conidtions for full house is found
     if (str.length === 5) {
       this.result.bestHand = handRanking[3];
@@ -258,8 +273,6 @@ const Evaluate = class {
       fullHouse = true;
       ranking = 4;
       return ranking;
-    } else {
-      // resetAll();
     }
 
     // find flush
@@ -272,6 +285,9 @@ const Evaluate = class {
         val === val[i + 4]
       ) {
         flush = true;
+      } else {
+        // resetAll();
+        return;
       }
 
       if (flush === true) str.push(`${val}`);
@@ -283,8 +299,6 @@ const Evaluate = class {
       console.log(`${this.player} has A ${[str]} FLUSH !`);
       ranking = 5;
       return ranking;
-    } else {
-      // resetAll();
     }
 
     // findStraight
@@ -298,6 +312,7 @@ const Evaluate = class {
           count += 1;
           // straight = 1;
         } else {
+          // resetAll();
           return;
         }
       }
@@ -323,38 +338,35 @@ const Evaluate = class {
       console.log(`${this.player} has STRAIGHTS${[...str]}`);
       ranking = 6;
       return ranking;
-    } else {
-      // resetAll();
     }
 
-    // findThreeofAKind
-    for (let i = 0; i < 5; i++) {
-      this.arrRank.forEach((val, i, arr) => {
-        if (val === arr[i + 1] && val === arr[i + 2]) {
-          threeOfAKind = true;
+    // // findThreeofAKind
+    // for (let i = 0; i < 5; i++) {
+    //   this.arrRank.forEach((val, i, arr) => {
+    //     if (val === arr[i + 1] && val === arr[i + 2]) {
+    //       threeOfAKind = true;
 
-          for (let n = i; n < i + 3; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+    //       for (let n = i; n < i + 3; n++) {
+    //         str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
 
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
-        } else {
-          return;
-        }
-      });
-    }
+    //         // Push
+    //         resultRank.push(`${_arrRank[n]}`);
+    //         resultSuit.push(`${_arrSuit[n]}`);
+    //       }
+    //     } else {
+    // resetAll();
+    //       return;
+    //     }
+    //   });
+    // }
 
-    // log if conidtions for straight is found
-    if (str.length === 3) {
-      this.result.bestHand = handRanking[6];
-      console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
-      ranking = 7;
-      return ranking;
-    } else {
-      resetAll();
-    }
+    // // log if conidtions for straight is found
+    // if (str.length === 3) {
+    //   this.result.bestHand = handRanking[6];
+    //   console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
+    //   ranking = 7;
+    //   return ranking;
+    // }
 
     // findPairs
     this.arrRank.forEach(function (val, i, arr) {
@@ -392,15 +404,18 @@ const Evaluate = class {
     }
     if (str.length === 2) {
       this.result.bestHand = handRanking[8];
-      console.log(`${_player} has PAIRS ${[...str]}!`);
+      console.log(`${_player} has PAIR ${[...str]}!`);
       pairType = 1;
       ranking = 9;
       return ranking;
     }
     if (str.length === 0) {
       this.result.bestHand = handRanking[9];
-      console.log(`${_player} has NO PAIRS, find highest card`);
-      this.findHighest();
+      const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
+      console.log(`${_player} highest card is ${highestCard}`);
+
+      resultRank.push(`${_arrRank[6]}`);
+      resultSuit.push(`${_arrSuit[6]}`);
       ranking = 10;
       return ranking;
     }
@@ -408,10 +423,12 @@ const Evaluate = class {
     // return ranking;
   }
 
-  findHighest() {
-    const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
-    console.log(`${this.player}'s highest card is ${highestCard}`);
-  }
+  // findHighest() {
+  //   const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
+  //   resultRank.push(`${_arrRank[6]}`);
+  //   resultSuit.push(`${_arrSuit[6]}`);
+  //   console.log(`${this.player}'s highest card is ${highestCard}`);
+  // }
 };
 
 // Initialize dealer class
@@ -673,55 +690,3 @@ btnReset.addEventListener("click", function () {
 });
 
 console.log(handRanking);
-
-// let testArr = [0, 1, 1, 1, 9, 9, 12];
-// let str = [];
-// let testRanking;
-
-// const findFullHouse = function () {
-//   let startIndex3Kind;
-//   // for (let i = 0; i < testArr.length; i++) {
-//   testArr.forEach((val, i, arr) => {
-//     // find three similar cards
-//     if (val === arr[i + 1] && val === arr[i + 2]) {
-//       startIndex3Kind = i;
-//       for (let n = i; n < i + 3; n++) {
-//         console.log(`${testArr[n]}`);
-//         str.push(`${testArr[n]}`);
-//         console.log(str);
-
-//         // Push
-//         // resultRank.push(`${_arrRank[n]}`);
-//         // resultSuit.push(`${_arrSuit[n]}`);
-//       }
-//     }
-
-//     // find pair
-//     if (val === arr[i + 1] && val !== arr[i + 2] && i !== startIndex3Kind + 1) {
-//       for (let n = i; n < i + 2; n++) {
-//         console.log(`${testArr[n]}`);
-
-//         str.push(`${testArr[n]}`);
-//         console.log(str);
-
-//         // Push
-//         // resultRank.push(`${_arrRank[n]}`);
-//         // resultSuit.push(`${_arrSuit[n]}`);
-//       }
-//     }
-//   });
-//   // }
-
-//   // log if conidtions for full house is found
-//   if (str.length === 5) {
-//     testRanking = handRanking[3];
-//     console.log(`test player has FULL HOUSE ${[...str]}!`);
-//     // fullHouse = true;
-//     // ranking = 4;
-//     // return ranking;
-//   } else {
-//     // resetAll();
-//   }
-// };
-
-// findFullHouse();
