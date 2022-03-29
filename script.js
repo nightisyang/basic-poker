@@ -210,41 +210,48 @@ const Evaluate = class {
       }
     });
 
+    // log if conidtions for four of a kind is found
     if (str.length === 4) {
       this.result.bestHand = handRanking[2];
       ranking = 3;
       return ranking;
     } else {
-      resetAll();
+      // resetAll();
     }
 
     // find full house
-    for (let i = 0; i < this.arrRank.length; i++) {
-      this.arrRank.forEach((val, i, arr) => {
-        // find three similar cards
-        if (val === arr[i + 1] && val === arr[i + 2]) {
-          for (let n = i; n < i + 3; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+    let startIndex3Kind;
 
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
+    this.arrRank.forEach((val, i, arr) => {
+      // find three similar cards
+      if (val === arr[i + 1] && val === arr[i + 2]) {
+        startIndex3Kind = i;
+        for (let n = i; n < i + 3; n++) {
+          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
         }
+      }
 
-        // find pair
-        if (val === arr[i + 1] && val !== arr[i + 2]) {
-          for (let n = i; n < i + 2; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+      // find pair
+      if (
+        val === arr[i + 1] &&
+        val !== arr[i + 2] &&
+        i !== startIndex3Kind + 1
+      ) {
+        for (let n = i; n < i + 2; n++) {
+          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
 
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
         }
-      });
-    }
+      }
+    });
 
+    // log if conidtions for full house is found
     if (str.length === 5) {
       this.result.bestHand = handRanking[3];
       console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
@@ -252,7 +259,7 @@ const Evaluate = class {
       ranking = 4;
       return ranking;
     } else {
-      resetAll();
+      // resetAll();
     }
 
     // find flush
@@ -269,13 +276,15 @@ const Evaluate = class {
 
       if (flush === true) str.push(`${val}`);
     });
+
+    // log if conidtions for flush is found
     if (flush === true) {
       this.result.bestHand = handRanking[4];
       console.log(`${this.player} has A ${[str]} FLUSH !`);
       ranking = 5;
       return ranking;
     } else {
-      resetAll();
+      // resetAll();
     }
 
     // findStraight
@@ -315,7 +324,7 @@ const Evaluate = class {
       ranking = 6;
       return ranking;
     } else {
-      resetAll();
+      // resetAll();
     }
 
     // findThreeofAKind
@@ -336,6 +345,8 @@ const Evaluate = class {
         }
       });
     }
+
+    // log if conidtions for straight is found
     if (str.length === 3) {
       this.result.bestHand = handRanking[6];
       console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
@@ -360,6 +371,7 @@ const Evaluate = class {
       }
     });
 
+    // log if conidtions for different types of pairs are found
     if (str.length === 4) {
       this.result.bestHand = handRanking[7];
       console.log(`${_player} has TWO PAIRS ${[...str]}!`);
@@ -657,6 +669,59 @@ btnEval.addEventListener("click", function () {
 btnReset.addEventListener("click", function () {
   resetGame();
   console.log("Game reset, please initialize game to play!");
+  textbox.value = "Reset! Press Initialize game to start!";
 });
 
 console.log(handRanking);
+
+// let testArr = [0, 1, 1, 1, 9, 9, 12];
+// let str = [];
+// let testRanking;
+
+// const findFullHouse = function () {
+//   let startIndex3Kind;
+//   // for (let i = 0; i < testArr.length; i++) {
+//   testArr.forEach((val, i, arr) => {
+//     // find three similar cards
+//     if (val === arr[i + 1] && val === arr[i + 2]) {
+//       startIndex3Kind = i;
+//       for (let n = i; n < i + 3; n++) {
+//         console.log(`${testArr[n]}`);
+//         str.push(`${testArr[n]}`);
+//         console.log(str);
+
+//         // Push
+//         // resultRank.push(`${_arrRank[n]}`);
+//         // resultSuit.push(`${_arrSuit[n]}`);
+//       }
+//     }
+
+//     // find pair
+//     if (val === arr[i + 1] && val !== arr[i + 2] && i !== startIndex3Kind + 1) {
+//       for (let n = i; n < i + 2; n++) {
+//         console.log(`${testArr[n]}`);
+
+//         str.push(`${testArr[n]}`);
+//         console.log(str);
+
+//         // Push
+//         // resultRank.push(`${_arrRank[n]}`);
+//         // resultSuit.push(`${_arrSuit[n]}`);
+//       }
+//     }
+//   });
+//   // }
+
+//   // log if conidtions for full house is found
+//   if (str.length === 5) {
+//     testRanking = handRanking[3];
+//     console.log(`test player has FULL HOUSE ${[...str]}!`);
+//     // fullHouse = true;
+//     // ranking = 4;
+//     // return ranking;
+//   } else {
+//     // resetAll();
+//   }
+// };
+
+// findFullHouse();
