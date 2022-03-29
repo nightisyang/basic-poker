@@ -45,6 +45,19 @@ const gameStateArr = [
 
 gameState = gameStateArr[0];
 
+const handRanking = [
+  "Royal flush",
+  "Straight flush",
+  "Four of a kind",
+  "Full house",
+  "Flush",
+  "Straight",
+  "Three of a kind",
+  "Two pair",
+  "Pair",
+  "High Card",
+];
+
 // Diamonds, Spade, Hearts, Clubs
 // Ace, 1-to-10, J, Q, K
 
@@ -233,23 +246,31 @@ const PlayerCl = class {
 
 // Evaluate Class prototype
 const Evaluate = class {
-  constructor(player, cards, arrIndexOfRank, arrSuit, arrRank) {
+  constructor(player, cards, arrIndexOfRank, arrSuit, arrRank, result) {
     (this.player = player),
       (this.cards = []),
       (this.arrIndexOfRank = []),
       (this.arrSuit = []),
-      (this.arrRank = []);
+      (this.arrRank = []),
+      (this.result = { bestHand: "start", resultRank: [], resultSuit: [] });
   }
 
   // METHODS
   findOutcomes() {
-    this.findStraight(); // 0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card (royal)
-    this.findFlush();
-    this.findFourOfAKind();
-    this.findThreeOfAKind();
+    // const straight = this.findStraight();
+    // const findFullHouse = this.findFullHouse();
+    // const pair = this.findPair();
+    // const flush = this.findFlush();
+    // const fourOfAKind = this.findFourOfAKind();
+    // const threeOfAKind = this.findThreeOfAKind();
+    this.findAll();
+
+    // this.findStraight(); // 0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card (royal)
+    // this.findFlush();
+    // this.findFourOfAKind();
+    // this.findThreeOfAKind();
     // this.findHighest();
-    this.findPair();
-    this.findFullHouse();
+    // this.findFullHouse();
 
     // // Royal flush - same suit, straight starting with 10
     // if (this.findFlush === true && this.findStraight === 2)
@@ -282,25 +303,260 @@ const Evaluate = class {
     //   this.findHighest();
   }
 
+  findAll() {
+    let _player = this.player;
+    let _arrRank = this.arrRank;
+    let _arrSuit = this.arrSuit;
+    let { resultRank, resultSuit } = this.result;
+    let str = [];
+    let ranking;
+
+    let fourOfAKind = false;
+    let threeOfAKind = false;
+    let straight = 0;
+    let count = 0;
+    let flush = false;
+    let fullHouse = false;
+    let pairType = 0;
+
+    const resetAll = function () {
+      resultRank = [];
+      resultSuit = [];
+      str = [];
+    };
+
+    // findFourOfAKind
+    this.arrRank.forEach((val, i, arr) => {
+      if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
+        fourOfAKind = true;
+        for (let n = i; n < i + 4; n++) {
+          // Place in string array
+          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
+        }
+      } else {
+        return;
+      }
+    });
+
+    if (str.length === 4) {
+      this.result.bestHand = handRanking[2];
+      ranking = 3;
+      return ranking;
+    } else {
+      resetAll();
+    }
+
+    // find full house
+    for (let i = 0; i < this.arrRank.length; i++) {
+      this.arrRank.forEach((val, i, arr) => {
+        // find three similar cards
+        if (val === arr[i + 1] && val === arr[i + 2]) {
+          for (let n = i; n < i + 3; n++) {
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
+          }
+        }
+
+        // find pair
+        if (val === arr[i + 1] && val !== arr[i + 2]) {
+          for (let n = i; n < i + 2; n++) {
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
+          }
+        }
+      });
+    }
+
+    if (str.length === 5) {
+      this.result.bestHand = handRanking[3];
+      console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
+      fullHouse = true;
+      ranking = 4;
+      return ranking;
+    } else {
+      resetAll();
+    }
+
+    // find flush
+    const arrSuitSorted = this.arrSuit.slice().sort();
+    arrSuitSorted.forEach((val, i, arr) => {
+      if (
+        val === val[i + 1] &&
+        val === val[i + 2] &&
+        val === val[i + 3] &&
+        val === val[i + 4]
+      ) {
+        flush = true;
+      }
+
+      if (flush === true) str.push(`${val}`);
+    });
+    if (flush === true) {
+      this.result.bestHand = handRanking[4];
+      console.log(`${this.player} has A ${[str]} FLUSH !`);
+      ranking = 5;
+      return ranking;
+    } else {
+      resetAll();
+    }
+
+    // findStraight
+    this.arrRank.forEach((val, i, arr) => {
+      let plus;
+
+      for (let n = 1; n < 5; n++) {
+        plus = arr[i + n] - n;
+
+        if (val === plus) {
+          count += 1;
+          // straight = 1;
+        } else {
+          return;
+        }
+      }
+
+      if (count == 4) straight = 1;
+
+      if (val === 8 && count === 4) {
+        straight = 2;
+      }
+
+      if (straight !== 0) {
+        for (let y = i; y < i + 5; y++) {
+          str.push(` ${_arrRank[y]} of ${_arrSuit[y]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[y]}`);
+          resultSuit.push(`${_arrSuit[y]}`);
+        }
+      }
+    });
+    if (straight === 1) {
+      this.result.bestHand = handRanking[5];
+      console.log(`${this.player} has STRAIGHTS${[...str]}`);
+      ranking = 6;
+      return ranking;
+    } else {
+      resetAll();
+    }
+
+    // findThreeofAKind
+    for (let i = 0; i < 5; i++) {
+      this.arrRank.forEach((val, i, arr) => {
+        if (val === arr[i + 1] && val === arr[i + 2]) {
+          threeOfAKind = true;
+
+          for (let n = i; n < i + 3; n++) {
+            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
+          }
+        } else {
+          return;
+        }
+      });
+    }
+    if (str.length === 3) {
+      this.result.bestHand = handRanking[6];
+      console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
+      ranking = 7;
+      return ranking;
+    } else {
+      resetAll();
+    }
+
+    // findPairs
+    this.arrRank.forEach(function (val, i, arr) {
+      if (val === arr[i + 1] && val !== arr[i + 2]) {
+        for (let n = i; n < i + 2; n++) {
+          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
+        }
+      } else {
+        return;
+      }
+    });
+
+    if (str.length === 4) {
+      this.result.bestHand = handRanking[7];
+      console.log(`${_player} has TWO PAIRS ${[...str]}!`);
+      pairType = 2;
+      ranking = 8;
+      return ranking;
+    }
+    if (str.length === 6) {
+      str.splice(0, 2);
+
+      this.result.bestHand = handRanking[7];
+      console.log(
+        `${_player} has THREE PAIRS the highest TWO PAIRS are ${[...str]}!`
+      );
+      pairType = 2;
+      ranking = 8;
+      return ranking;
+    }
+    if (str.length === 2) {
+      this.result.bestHand = handRanking[8];
+      console.log(`${_player} has PAIRS ${[...str]}!`);
+      pairType = 1;
+      ranking = 9;
+      return ranking;
+    }
+    if (str.length === 0) {
+      this.result.bestHand = handRanking[9];
+      console.log(`${_player} has NO PAIRS, find highest card`);
+      this.findHighest();
+      ranking = 10;
+      return ranking;
+    }
+
+    // return ranking;
+  }
+
   findFourOfAKind() {
     // Always false until proven true
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let fourOfAKind = false;
+    let { resultRank, resultSuit } = this.result;
     let str = [];
 
     // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         for (let n = i; n < i + 4; n++) {
+          // Place in string array
           str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
         }
       }
       fourOfAKind = true;
     });
-    if (str.length === 4)
-      console.log(`${this.player} has FOUR OF A KIND ${[...str]}!`);
+    if (str.length === 4) {
+      this.result.bestHand = handRanking[2];
+    } else {
+      resultRank = [];
+      resultSuit = [];
+    }
     return fourOfAKind;
   }
 
@@ -309,8 +565,9 @@ const Evaluate = class {
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
-
     let threeOfAKind = false;
+    let { resultRank, resultSuit } = this.result;
+
     let str = [];
 
     // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
@@ -319,13 +576,23 @@ const Evaluate = class {
         if (val === arr[i + 1] && val === arr[i + 2]) {
           for (let n = i; n < i + 3; n++) {
             str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
           }
         }
         threeOfAKind = true;
       });
     }
     if (str.length === 3) {
+      this.result.bestHand = handRanking[6];
+      console.log(_bestHand);
+
       console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
+    } else {
+      resultRank = [];
+      resultSuit = [];
     }
     return threeOfAKind;
   }
@@ -335,28 +602,40 @@ const Evaluate = class {
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
+    let { resultRank, resultSuit } = this.result;
     let str = [];
 
     this.arrRank.forEach(function (val, i, arr) {
       if (val === arr[i + 1] && val !== arr[i + 2]) {
         for (let n = i; n < i + 2; n++) {
           str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[n]}`);
+          resultSuit.push(`${_arrSuit[n]}`);
         }
       }
     });
     if (str.length === 0) {
+      this.result.bestHand = handRanking[9];
+
       console.log(`${_player} has NO PAIRS, find highest card`);
+      this.findHighest();
     }
     if (str.length === 2) {
+      this.result.bestHand = handRanking[8];
       console.log(`${_player} has PAIRS ${[...str]}!`);
       pairType = 1;
     }
     if (str.length === 4) {
+      this.result.bestHand = handRanking[7];
       console.log(`${_player} has TWO PAIRS ${[...str]}!`);
       pairType = 2;
     }
     if (str.length === 6) {
       str.splice(0, 2);
+
+      this.result.bestHand = handRanking[7];
       console.log(
         `${_player} has THREE PAIRS the highest TWO PAIRS are ${[...str]}!`
       );
@@ -371,26 +650,42 @@ const Evaluate = class {
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
+    let { resultRank, resultSuit } = this.result;
     let str = [];
 
     for (let i = 0; i < this.arrRank.length; i++) {
       this.arrRank.forEach((val, i, arr) => {
+        // find three similar cards
         if (val === arr[i + 1] && val === arr[i + 2]) {
           for (let n = i; n < i + 3; n++) {
             str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
           }
         }
+
+        // find pair
         if (val === arr[i + 1] && val !== arr[i + 2]) {
           for (let n = i; n < i + 2; n++) {
             str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+            // Push
+            resultRank.push(`${_arrRank[n]}`);
+            resultSuit.push(`${_arrSuit[n]}`);
           }
         }
       });
     }
 
     if (str.length === 5) {
+      this.result.bestHand = handRanking[3];
       console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
       fullHouse = true;
+    } else {
+      resultRank = [];
+      resultSuit = [];
     }
     return fullHouse;
   }
@@ -400,6 +695,8 @@ const Evaluate = class {
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
+    let { resultRank, resultSuit } = this.result;
+
     let str = [];
     let count = 0;
 
@@ -424,24 +721,33 @@ const Evaluate = class {
       }
 
       if (straight !== 0) {
-        for (let y = i; y < i + 5; y++)
+        for (let y = i; y < i + 5; y++) {
           str.push(` ${_arrRank[y]} of ${_arrSuit[y]}`);
+
+          // Push
+          resultRank.push(`${_arrRank[y]}`);
+          resultSuit.push(`${_arrSuit[y]}`);
+        }
       }
     });
     if (straight === 1) {
-      // console.log(straight);
+      this.result.bestHand = handRanking[5];
       console.log(`${this.player} has STRAIGHTS${[...str]}`);
+    } else {
+      resultRank = [];
+      resultSuit = [];
     }
+
     return straight;
   }
 
   findFlush() {
     // Always false until proven true
     let flush = false;
-    let arrSuitSorted = this.arrSuit;
+    const arrSuitSorted = this.arrSuit.slice().sort();
+    let { resultRank, resultSuit } = this.result;
     let str = [];
 
-    arrSuitSorted.sort();
     // This logic doesn't apply, since suits are not arranged to sequence. Need to sort before if statement
     arrSuitSorted.forEach((val, i, arr) => {
       if (
@@ -455,7 +761,15 @@ const Evaluate = class {
 
       if (flush === true) str.push(`${val}`);
     });
-    if (flush === true) console.log(`${this.player} has A ${[str]} FLUSH !`);
+    if (flush === true) {
+      this.result.bestHand = handRanking[4];
+
+      console.log(`${this.player} has A ${[str]} FLUSH !`);
+    } else {
+      resultRank = [];
+      resultSuit = [];
+    }
+
     return flush;
   }
 
@@ -612,19 +926,6 @@ const initGame = function () {
 // Pair Two cards of the same rank.
 // High Card When you haven't made any of the hands above, the highest card plays. In the example below, the jack plays as the highest card.
 
-const handRanking = [
-  "Royal flush",
-  "Straight flush",
-  "Four of a kind",
-  "Full house",
-  "Flush",
-  "Straight",
-  "Three of a kind",
-  "Two pair",
-  "Pair",
-  "High Card",
-];
-
 // Sequence and pairs lastly, highest card
 // For each player, what is the best combo - then compare that combo with other players
 // Are there any seqence? How many card are in sequence?  Are the cards all in the same suit? Are there any pairs?
@@ -636,7 +937,7 @@ const evaluateCards = function () {
 
   // create new object and concat with dealer's hand
   for (let i = 0; i < players.length; i++) {
-    evalPlayer[i] = new Evaluate(players[i].playerNo, [], []);
+    evalPlayer[i] = new Evaluate(players[i].playerNo, [], [], {});
   }
 
   // push hands into evalPlayer.cards
@@ -664,6 +965,10 @@ const evaluateCards = function () {
     }
   }
 
+  // for (let i = 0; i < evalPlayer.length; i++) {
+  //   console.log(evalPlayer[i]);
+  //   console.log(`${evalPlayer[i].findAll()}`);
+  // }
   console.log(evalPlayer[0], evalPlayer[1], evalPlayer[2], evalPlayer[3]);
 };
 // sort cards, remmeber to have [suit] sorted accordingly
@@ -775,9 +1080,13 @@ btnEval.addEventListener("click", function () {
     evaluateCards();
 
     for (let i = 0; i < evalPlayer.length; i++) {
-      evalPlayer[i].findOutcomes();
+      const score = evalPlayer[i].findAll();
+      console.log(`${evalPlayer[i].player} has a ranking of ${score}`);
+      addTextBox(
+        `\n${evalPlayer[i].player} has a ranking of ${score} ${evalPlayer[i].result.bestHand}`
+      );
     }
-    addTextBox("\nCard evaluation logic still under construction");
+    addTextBox("\nLowest rank number wins");
     // Skip from 9 to 11, no bets
     gameState = gameStateArr[11];
   } else {
@@ -790,110 +1099,4 @@ btnReset.addEventListener("click", function () {
   console.log("Game reset, please initialize game to play!");
 });
 
-const test = [4, 5, 6, 7, 8, 10, 11, 12];
-
-const findStraight = function () {
-  let straight = 0;
-  let str = [];
-  let count = 0;
-
-  test.forEach((val, i, arr) => {
-    let plus;
-
-    for (let n = 1; n < 5; n++) {
-      plus = arr[i + n] - n;
-
-      if (val === plus) {
-        count += 1;
-        // straight = 1;
-      } else {
-        return;
-      }
-    }
-
-    if (count == 4) straight = 1;
-
-    if (val === 8 && count === 4) {
-      straight = 2;
-    }
-
-    if (straight !== 0) {
-      for (let y = i; y < i + 5; y++) str.push(` ${arr[y]}`);
-    }
-  });
-
-  console.log(straight);
-  console.log(str);
-  if (straight === 1) {
-    // console.log(straight);
-    console.log(`test has STRAIGHTS${[...str]}`);
-  }
-};
-
-findStraight();
-
-// const findFourOfAKind = function () {
-//   // Always false until proven true
-//   let boolean = false;
-//   let str = [];
-
-//   // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
-//   test.forEach((val, i, arr) => {
-//     if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
-//       for (let n = i; n < i + 4; n++) {
-//         str.push(`${arr[n]}`);
-//       }
-//     }
-//   });
-
-//   console.log(str);
-//   if (str.length === 4) {
-//     console.log(`${str} test`);
-//     return boolean;
-//   }
-// };
-
-// findFourOfAKind();
-
-// arr3OfAKind.forEach((val, i, arr) => {
-//   if (val === arr[i + 1] && val === arr[i + 2]) {
-//     console.log("test3");
-//   }
-// });
-
-// const findThreeOfAKind = function () {
-//   let cardCompare = [[], [], [], [], []];
-//   let threeOfAKind;
-
-//   // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
-//   for (let i = 0; i < 5; i++) {
-//     arr3OfAKind.forEach((val, i, arr) => {
-//       if ((val === val[i + 1]) === val[i + 2]) {
-//         console.log(val);
-//         console.log(`Test player has 3 of a kind`);
-//       }
-//     });
-// // compare initial card to other card, return value to card1to2 etc
-// for (let n = i + 1; n < i + 3; n++)
-//   if (arr3OfAKind[i] !== arr3OfAKind[n]) {
-//     cardCompare[i].push(false);
-//   } else if (arr3OfAKind[i] === arr3OfAKind[n]) {
-//     cardCompare[i].push(true);
-//   }
-// && arr3OfAKind[i] === arr3OfAKind[i + 2] &&  arr3OfAKind[i] === arr3OfAKind[i + 3])
-// }
-// console.error("Three of a kind");
-// console.log(cardCompare);
-
-//   for (let i = 0; i < cardCompare.length; i++) {
-//     let frame = cardCompare[i];
-//     if ((frame[0] && frame[1]) === true) {
-//       console.log(
-//         `Test array has three of a kind in ${arr3OfAKind[i]}, ${
-//           arr3OfAKind[i + 1]
-//         }, ${arr3OfAKind[i + 2]}`
-//       );
-//     }
-//   }
-// };
-// findThreeOfAKind();
+console.log(handRanking);
