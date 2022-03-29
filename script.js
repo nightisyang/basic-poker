@@ -132,74 +132,6 @@ const generateDeck = function (suit, rank) {
   }
 };
 
-/*
-//Shuffle, take in deck array, generate random number, destructure deck[random] and place into shuffledDeck
-// const shuffle = function (deck) {
-// // Generate 52 random numbers
-
-// let randArr = [];
-
-// for (let i = 0; i < 51; i++ ){
-//   randArr.push(Math.random)
-// }
-
-// };
-
-/*
-let randArr = [];
-
-const fillArr = function () {
-  // if array is filled, then return
-  if (randArr.length === 52) {
-    return;
-  }
-
-  // function to generate random integer generator between 0 - 51
-  const randomIntGen = function () {
-    return (Math.random() * 51).toFixed();
-  };
-
-  // call function and assign value to random
-  let random = Number(randomIntGen());
-
-  // If value is not in array, then push to value array
-  if (!randArr.includes(random)) {
-    randArr.push(random);
-  }
-
-  // while array isn't filled, re-run function
-  // recursive loop until condition is satisfied
-  while (randArr.length < 52) {
-    fillArr();
-  }
-};
-
-fillArr();
-console.log(randArr);
-
-const playDeck = function () {
-  // Create empty array with empty values
-  const emptyArr = Array(52).fill(undefined);
-
-  // goes through each element in randArr, takes that value and uses that as the new index no for deck and added into emptyArr
-  randArr.forEach(function (element, index) {
-    emptyArr[element] = deck[index];
-  });
-
-  // Place deck using randArr index into emptyArr
-  // for (let i = 52; i >= 0; --i) {
-  //   emptyArr.splice(randArr[i], 1, deck[i]);
-  // }
-
-  return emptyArr;
-};
-
-console.log(playDeck());
-// The previous logic is based on my experience to randomize sequence of numbers from excel
-// Generate rand() column, sort big to small
-// Computationally expensive as the probability to generate unique numbers will be harder over time
-*/
-
 // Fisher Yates Shuffle
 // * source https://medium.com/swlh/the-javascript-shuffle-62660df19a5d
 
@@ -257,50 +189,7 @@ const Evaluate = class {
 
   // METHODS
   findOutcomes() {
-    // const straight = this.findStraight();
-    // const findFullHouse = this.findFullHouse();
-    // const pair = this.findPair();
-    // const flush = this.findFlush();
-    // const fourOfAKind = this.findFourOfAKind();
-    // const threeOfAKind = this.findThreeOfAKind();
     this.findAll();
-
-    // this.findStraight(); // 0 no straights, 1 straight, 2 straight starting with IndexofRank 8 aka 10 card (royal)
-    // this.findFlush();
-    // this.findFourOfAKind();
-    // this.findThreeOfAKind();
-    // this.findHighest();
-    // this.findFullHouse();
-
-    // // Royal flush - same suit, straight starting with 10
-    // if (this.findFlush === true && this.findStraight === 2)
-    //   console.log(`${this.player} has a royal flush!`);
-
-    // // Straight flush - same suit, 5 straight cards
-    // if (this.findFlush === true && this.findStraight === 1)
-    //   console.log(`${this.player} has a straight flush!`);
-
-    // if (this.findFourOfAKind === true)
-    //   console.log(`${this.player} has a 4 of a kind!`);
-
-    // if (this.findRankDuplicates === 4)
-    //   console.log(`${this.player} has a full house!`);
-
-    // if (this.findFlush === true) console.log(`${this.player} has a flush!`);
-    // if (this.findStraight === 1) console.log(`${this.player} has a straight!`);
-
-    // if (this.findRankDuplicates === 3)
-    //   console.log(`${this.player} has three of a kind!`);
-    // if (this.findRankDuplicates === 2)
-    //   console.log(`${this.player} has two pairs!`);
-    // if (this.findRankDuplicates === 1)
-    //   console.log(`${this.player} has one pair!`);
-
-    // if (
-    //   (this.findFlush === this.findFourOfAKind) === false &&
-    //   (this.findStraight === this.findRankDuplicates) === 0
-    // )
-    //   this.findHighest();
   }
 
   findAll() {
@@ -528,251 +417,6 @@ const Evaluate = class {
     // return ranking;
   }
 
-  findFourOfAKind() {
-    // Always false until proven true
-    let _player = this.player;
-    let _arrRank = this.arrRank;
-    let _arrSuit = this.arrSuit;
-    let fourOfAKind = false;
-    let { resultRank, resultSuit } = this.result;
-    let str = [];
-
-    // Four frames cards [0 to 3], [1 to 4], [2 to 5], [3 to 6]. Frame [4 to 7] only has 3 cards
-    this.arrRank.forEach((val, i, arr) => {
-      if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
-        for (let n = i; n < i + 4; n++) {
-          // Place in string array
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
-        }
-      }
-      fourOfAKind = true;
-    });
-    if (str.length === 4) {
-      this.result.bestHand = handRanking[2];
-    } else {
-      resultRank = [];
-      resultSuit = [];
-    }
-    return fourOfAKind;
-  }
-
-  findThreeOfAKind() {
-    // Always false until proven true
-    let _player = this.player;
-    let _arrRank = this.arrRank;
-    let _arrSuit = this.arrSuit;
-    let threeOfAKind = false;
-    let { resultRank, resultSuit } = this.result;
-
-    let str = [];
-
-    // Five frames cards [0 to 2], [1 to 3], [2 to 4], [3 to 5] [4 to 7]
-    for (let i = 0; i < 5; i++) {
-      this.arrRank.forEach((val, i, arr) => {
-        if (val === arr[i + 1] && val === arr[i + 2]) {
-          for (let n = i; n < i + 3; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
-        }
-        threeOfAKind = true;
-      });
-    }
-    if (str.length === 3) {
-      this.result.bestHand = handRanking[6];
-      console.log(_bestHand);
-
-      console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
-    } else {
-      resultRank = [];
-      resultSuit = [];
-    }
-    return threeOfAKind;
-  }
-
-  findPair() {
-    let pairType = 0;
-    let _player = this.player;
-    let _arrRank = this.arrRank;
-    let _arrSuit = this.arrSuit;
-    let { resultRank, resultSuit } = this.result;
-    let str = [];
-
-    this.arrRank.forEach(function (val, i, arr) {
-      if (val === arr[i + 1] && val !== arr[i + 2]) {
-        for (let n = i; n < i + 2; n++) {
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
-        }
-      }
-    });
-    if (str.length === 0) {
-      this.result.bestHand = handRanking[9];
-
-      console.log(`${_player} has NO PAIRS, find highest card`);
-      this.findHighest();
-    }
-    if (str.length === 2) {
-      this.result.bestHand = handRanking[8];
-      console.log(`${_player} has PAIRS ${[...str]}!`);
-      pairType = 1;
-    }
-    if (str.length === 4) {
-      this.result.bestHand = handRanking[7];
-      console.log(`${_player} has TWO PAIRS ${[...str]}!`);
-      pairType = 2;
-    }
-    if (str.length === 6) {
-      str.splice(0, 2);
-
-      this.result.bestHand = handRanking[7];
-      console.log(
-        `${_player} has THREE PAIRS the highest TWO PAIRS are ${[...str]}!`
-      );
-      pairType = 2;
-    }
-    return pairType;
-  }
-
-  findFullHouse() {
-    // Always false until proven true
-    let fullHouse = false;
-    let _player = this.player;
-    let _arrRank = this.arrRank;
-    let _arrSuit = this.arrSuit;
-    let { resultRank, resultSuit } = this.result;
-    let str = [];
-
-    for (let i = 0; i < this.arrRank.length; i++) {
-      this.arrRank.forEach((val, i, arr) => {
-        // find three similar cards
-        if (val === arr[i + 1] && val === arr[i + 2]) {
-          for (let n = i; n < i + 3; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
-        }
-
-        // find pair
-        if (val === arr[i + 1] && val !== arr[i + 2]) {
-          for (let n = i; n < i + 2; n++) {
-            str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-            // Push
-            resultRank.push(`${_arrRank[n]}`);
-            resultSuit.push(`${_arrSuit[n]}`);
-          }
-        }
-      });
-    }
-
-    if (str.length === 5) {
-      this.result.bestHand = handRanking[3];
-      console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
-      fullHouse = true;
-    } else {
-      resultRank = [];
-      resultSuit = [];
-    }
-    return fullHouse;
-  }
-
-  findStraight() {
-    let straight = 0;
-    let _player = this.player;
-    let _arrRank = this.arrRank;
-    let _arrSuit = this.arrSuit;
-    let { resultRank, resultSuit } = this.result;
-
-    let str = [];
-    let count = 0;
-
-    this.arrRank.forEach((val, i, arr) => {
-      let plus;
-
-      for (let n = 1; n < 5; n++) {
-        plus = arr[i + n] - n;
-
-        if (val === plus) {
-          count += 1;
-          // straight = 1;
-        } else {
-          return;
-        }
-      }
-
-      if (count == 4) straight = 1;
-
-      if (val === 8 && count === 4) {
-        straight = 2;
-      }
-
-      if (straight !== 0) {
-        for (let y = i; y < i + 5; y++) {
-          str.push(` ${_arrRank[y]} of ${_arrSuit[y]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[y]}`);
-          resultSuit.push(`${_arrSuit[y]}`);
-        }
-      }
-    });
-    if (straight === 1) {
-      this.result.bestHand = handRanking[5];
-      console.log(`${this.player} has STRAIGHTS${[...str]}`);
-    } else {
-      resultRank = [];
-      resultSuit = [];
-    }
-
-    return straight;
-  }
-
-  findFlush() {
-    // Always false until proven true
-    let flush = false;
-    const arrSuitSorted = this.arrSuit.slice().sort();
-    let { resultRank, resultSuit } = this.result;
-    let str = [];
-
-    // This logic doesn't apply, since suits are not arranged to sequence. Need to sort before if statement
-    arrSuitSorted.forEach((val, i, arr) => {
-      if (
-        val === val[i + 1] &&
-        val === val[i + 2] &&
-        val === val[i + 3] &&
-        val === val[i + 4]
-      ) {
-        flush = true;
-      }
-
-      if (flush === true) str.push(`${val}`);
-    });
-    if (flush === true) {
-      this.result.bestHand = handRanking[4];
-
-      console.log(`${this.player} has A ${[str]} FLUSH !`);
-    } else {
-      resultRank = [];
-      resultSuit = [];
-    }
-
-    return flush;
-  }
-
   findHighest() {
     const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
     console.log(`${this.player}'s highest card is ${highestCard}`);
@@ -812,28 +456,6 @@ const initPlayers = function (nPlayers) {
 
   addTextBox(`\n${nPlayers} players initialized`);
 };
-
-// Show dealers hand
-
-/*
-// Distribute cards to players plus house
-// Player class, cards in hand
-// Remove top card playDeck[0], burn
-// deal take cards and add to players
-// remove, add to player 1
-// remove, add to player 2
-// remove, add to player 3
-// remove, add to player 4
-// repeat deal
-// bet, implement later
-// flop
-// turn
-// river
-
-// Deal, take deck[0], add to player1.hand.push, delete from deck[0].remove - rotate
-
-// Object destructuring
-*/
 
 // Deal cards to players
 const dealCard = function (activePlayers) {
@@ -898,40 +520,6 @@ const initGame = function () {
   }
 };
 
-//                $$\                 $$\                     $$\
-//                \__|                $$ |                    \__|
-//  $$\  $$\  $$\ $$\ $$$$$$$\        $$ | $$$$$$\   $$$$$$\  $$\  $$$$$$$\
-//  $$ | $$ | $$ |$$ |$$  __$$\       $$ |$$  __$$\ $$  __$$\ $$ |$$  _____|
-//  $$ | $$ | $$ |$$ |$$ |  $$ |      $$ |$$ /  $$ |$$ /  $$ |$$ |$$ /
-//  $$ | $$ | $$ |$$ |$$ |  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |$$ |
-//  \$$$$$\$$$$  |$$ |$$ |  $$ |      $$ |\$$$$$$  |\$$$$$$$ |$$ |\$$$$$$$\
-//   \_____\____/ \__|\__|  \__|      \__| \______/  \____$$ |\__| \_______|
-//                                                  $$\   $$ |
-//                                                  \$$$$$$  |
-//                                                   \______/
-
-// Compare players hand in combination with dealer's hand
-// Make new array combining player and dealer's cards
-// Make some scores, highest points win
-
-// ** Source: https://www.cardplayer.com/rules-of-poker/hand-rankings ** //
-// Royal flush A, K, Q, J, 10, all the same suit.
-// Straight flush Five cards in a sequence, all in the same suit.
-// Four of a kind All four cards of the same rank.
-// Full house Three of a kind with a pair.
-// Flush Any five cards of the same suit, but not in a sequence.
-// Straight Five cards in a sequence, but not of the same suit.
-// Three of a kind Three cards of the same rank.
-// Two pair Two different pairs.
-// Pair Two cards of the same rank.
-// High Card When you haven't made any of the hands above, the highest card plays. In the example below, the jack plays as the highest card.
-
-// Sequence and pairs lastly, highest card
-// For each player, what is the best combo - then compare that combo with other players
-// Are there any seqence? How many card are in sequence?  Are the cards all in the same suit? Are there any pairs?
-// Rearrange players hand in an array of [rank] and [suit] instead of [card]
-// Then sort cards, check if there are any sequential ranks, check if there are pairs/duplicates
-
 const evaluateCards = function () {
   // Implement as object instead
 
@@ -965,19 +553,8 @@ const evaluateCards = function () {
     }
   }
 
-  // for (let i = 0; i < evalPlayer.length; i++) {
-  //   console.log(evalPlayer[i]);
-  //   console.log(`${evalPlayer[i].findAll()}`);
-  // }
   console.log(evalPlayer[0], evalPlayer[1], evalPlayer[2], evalPlayer[3]);
 };
-// sort cards, remmeber to have [suit] sorted accordingly
-//check if cards are in sequence or any pairs  are present
-// return player score according to handRanking
-
-//************************************************//
-//************************************************//
-//************************************************//
 
 // DOM
 btnInit.addEventListener("click", initGame);
@@ -1079,13 +656,17 @@ btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
     evaluateCards();
 
+    const playerArr = [];
     for (let i = 0; i < evalPlayer.length; i++) {
+      playerArr.push(evalPlayer[i]);
       const score = evalPlayer[i].findAll();
       console.log(`${evalPlayer[i].player} has a ranking of ${score}`);
       addTextBox(
         `\n${evalPlayer[i].player} has a ranking of ${score} ${evalPlayer[i].result.bestHand}`
       );
     }
+
+    console.log(playerArr);
     addTextBox("\nLowest rank number wins");
     // Skip from 9 to 11, no bets
     gameState = gameStateArr[11];
