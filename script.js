@@ -529,6 +529,34 @@ const evaluateCards = function () {
   console.log(evalPlayer[0], evalPlayer[1], evalPlayer[2], evalPlayer[3]);
 };
 
+const endGame = function () {
+  const playerScore = [];
+  for (let i = 0; i < evalPlayer.length; i++) {
+    evalPlayer[i].findAll();
+    const score = evalPlayer[i].result.bestHand;
+    playerScore.push(score);
+
+    // console.log(
+    //   `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
+    // );
+    addTextBox(
+      `\n${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
+    );
+  }
+
+  console.log(playerScore);
+  console.log(
+    `${evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player} wins!`
+  );
+  addTextBox(
+    `\n${
+      evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
+    } wins!`
+  );
+
+  addTextBox("\nLowest rank number wins");
+};
+
 // DOM
 btnInit.addEventListener("click", initGame);
 
@@ -629,33 +657,8 @@ btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
     evaluateCards();
 
-    const playerScore = [];
-    for (let i = 0; i < evalPlayer.length; i++) {
-      evalPlayer[i].findAll();
-      const score = evalPlayer[i].result.bestHand;
-      playerScore.push(score);
+    endGame();
 
-      // console.log(
-      //   `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
-      // );
-      addTextBox(
-        `\n${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
-      );
-    }
-
-    console.log(playerScore);
-    console.log(
-      `${
-        evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
-      } wins!`
-    );
-    addTextBox(
-      `\n${
-        evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
-      } wins!`
-    );
-
-    addTextBox("\nLowest rank number wins");
     // Skip from 9 to 11, no bets
     gameState = gameStateArr[11];
   } else {
