@@ -98,27 +98,6 @@ const resetGame = function () {
 const suit = ["Clubs", "Diamonds", "Hearts", "Spades"];
 const rank = [2, 3, 4, 5, 6, 7, 8, 9, 10, "Jack", "Queen", "King", "Ace"];
 
-// const generateCards = function (suit, rank) {
-//   for (let i = 0; i < suit.length; ++i) {
-//     deck.push({ suit: suit[i] });
-//   }
-// };
-
-// generateCards(suit, rank);
-// console.log(deck);
-
-// Generate a full suit A-K for each suit
-// Write code to loop over 1 suit (Diamonds), then refactor
-
-// const generateFullSuit = function (rank) {
-//   for (let i = 0; i < rank.length; i++) {
-//     deck.push({ suit: "Diamonds", rank: rank[i] });
-//   }
-// };
-
-// generateFullSuit(rank);
-// console.log(deck);
-
 // Refactor for entire deck
 const generateDeck = function (suit, rank) {
   for (let n = 0; n < suit.length; n++) {
