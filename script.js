@@ -163,7 +163,12 @@ const Evaluate = class {
       (this.arrIndexOfRank = []),
       (this.arrSuit = []),
       (this.arrRank = []),
-      (this.result = { bestHand: 11, resultRank: [], resultSuit: [] });
+      (this.result = {
+        bestHand: 11,
+        resultIndexRank: [],
+        resultRank: [],
+        resultSuit: [],
+      });
   }
 
   // METHODS
@@ -178,7 +183,8 @@ const Evaluate = class {
     let _player = this.player;
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
-    let { resultRank, resultSuit } = this.result;
+    let _arrIndexOfRank = this.arrIndexOfRank;
+    let { resultIndexRank, resultRank, resultSuit } = this.result;
     let str = [];
     let ranking;
 
@@ -196,20 +202,24 @@ const Evaluate = class {
       str = [];
     };
 
+    const pushStrNArr = function (n) {
+      // Place in string array
+      str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
+
+      // Push
+      resultIndexRank.push(_arrIndexOfRank[n]);
+      resultRank.push(_arrRank[n]);
+      resultSuit.push(_arrSuit[n]);
+    };
+
     // findFourOfAKind
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         fourOfAKind = true;
         for (let n = i; n < i + 4; n++) {
-          // Place in string array
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
+          pushStrNArr(n);
         }
       } else {
-        // resetAll();
         return;
       }
     });
@@ -231,14 +241,9 @@ const Evaluate = class {
       if (val === arr[i + 1] && val === arr[i + 2]) {
         startIndex3Kind = i;
         for (let n = i; n < i + 3; n++) {
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
+          pushStrNArr(n);
         }
       } else {
-        // resetAll();
         return;
       }
 
@@ -249,11 +254,7 @@ const Evaluate = class {
         i !== startIndex3Kind + 1
       ) {
         for (let n = i; n < i + 2; n++) {
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
+          pushStrNArr(n);
         }
       }
     });
@@ -284,7 +285,6 @@ const Evaluate = class {
       ) {
         flush = true;
       } else {
-        // resetAll();
         return;
       }
 
@@ -321,11 +321,7 @@ const Evaluate = class {
 
       if (straight !== 0) {
         for (let y = i; y < i + 5; y++) {
-          str.push(` ${_arrRank[y]} of ${_arrSuit[y]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[y]}`);
-          resultSuit.push(`${_arrSuit[y]}`);
+          pushStrNArr(y);
         }
       }
     });
@@ -342,11 +338,7 @@ const Evaluate = class {
     this.arrRank.forEach(function (val, i, arr) {
       if (val === arr[i + 1] && val !== arr[i + 2]) {
         for (let n = i; n < i + 2; n++) {
-          str.push(`${_arrRank[n]} of ${_arrSuit[n]}`);
-
-          // Push
-          resultRank.push(`${_arrRank[n]}`);
-          resultSuit.push(`${_arrSuit[n]}`);
+          pushStrNArr(n);
         }
       } else {
         return;
@@ -361,7 +353,11 @@ const Evaluate = class {
       return;
     }
     if (str.length === 6) {
+      // remove lowest two pairs
       str.splice(0, 2);
+      resultIndexRank.splice(0, 2);
+      resultRank.splice(0, 2);
+      resultSuit.splice(0, 2);
 
       this.result.bestHand = 7;
       console.log(
@@ -498,7 +494,7 @@ const evaluateCards = function () {
 
   // create new object and concat with dealer's hand
   for (let i = 0; i < players.length; i++) {
-    evalPlayer[i] = new Evaluate(players[i].playerNo, [], [], {});
+    evalPlayer[i] = new Evaluate(players[i].playerNo, [], [], [], {});
   }
 
   // push hands into evalPlayer.cards
@@ -531,31 +527,143 @@ const evaluateCards = function () {
 
 const endGame = function () {
   const playerScore = [];
+
+  // place player's best hand into playerScore arr
   for (let i = 0; i < evalPlayer.length; i++) {
     evalPlayer[i].findAll();
     const score = evalPlayer[i].result.bestHand;
     playerScore.push(score);
 
-    // console.log(
-    //   `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
-    // );
+    console.log(
+      `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
+    );
     addTextBox(
       `\n${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
     );
   }
 
+  // print playerScore arr
   console.log(playerScore);
-  console.log(
-    `${evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player} wins!`
-  );
-  addTextBox(
-    `\n${
-      evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
-    } wins!`
-  );
 
-  addTextBox("\nLowest rank number wins");
+  const toFindDuplicates = function () {
+    let playerIndexWithDupe = [];
+    let str = [];
+    let duplicates = false;
+    let typeOfDupe;
+    let winner;
+    let winnerCards = [];
+
+    // find lowest score
+    const lowestPlayerScore = Math.min(...playerScore);
+    console.log(`${lowestPlayerScore} is the lowest rank`);
+
+    // index of lowest score
+    playerIndexWithDupe.push(playerScore.indexOf(lowestPlayerScore));
+    console.log(
+      `The lowest rank is at index ${playerIndexWithDupe[0]} of playerScore arr`
+    );
+
+    // determine if there are any duplicates
+    playerScore.filter(function (val, i, arr) {
+      // find values that are similar to the lowest score
+      if (val === lowestPlayerScore && i !== playerIndexWithDupe[0]) {
+        // if a duplicate is found that is not in the same initial index found include it in array
+        playerIndexWithDupe.push(i);
+        duplicates = true;
+      }
+    });
+
+    const getCards = function (playerIndex, arrPushed) {
+      for (
+        let i = 0;
+        i < evalPlayer[playerIndex].result.resultRank.length;
+        i++
+      ) {
+        arrPushed.push(
+          `${evalPlayer[playerIndex].result.resultRank[i]} of ${evalPlayer[playerIndex].result.resultSuit[i]}`
+        );
+      }
+    };
+
+    // If there isn't any duplicate
+    if (duplicates === false) {
+      winner = playerIndexWithDupe[0];
+
+      getCards(winner, winnerCards);
+
+      str.push(
+        `${evalPlayer[winner].player} wins! ${
+          handRanking[evalPlayer[winner].result.bestHand]
+        } with ${[...winnerCards]}`
+      );
+      console.log(...str);
+      addTextBox(`\n\n${[...str]}`);
+    }
+
+    // if duplicates are found
+    if (duplicates === true) {
+      // what hands are duplicates
+      typeOfDupe = handRanking[lowestPlayerScore];
+      playerIndexWithDupe.forEach(function (val, i) {
+        str.push(`${evalPlayer[val].player}`);
+      });
+      console.log(`${[...str]} have are tied with ${typeOfDupe}`);
+      addTextBox(`\n\n${[...str]} are tied with ${typeOfDupe}`);
+    }
+
+    if (
+      (duplicates === true && typeOfDupe === "Pair") ||
+      typeOfDupe === "Two pair" ||
+      typeOfDupe === "Three of a kind" ||
+      typeOfDupe === "Straight"
+    ) {
+      let sumOfPairs = [];
+
+      playerIndexWithDupe.forEach(function (val, i) {
+        str = [];
+        let playerPair = evalPlayer[val].result.resultIndexRank;
+        getCards(val, str);
+        console.log(`${evalPlayer[val].player} with ${[...str]}`);
+
+        sumOfPairs.push(
+          playerPair.reduce(function (acc, val) {
+            return (acc += val);
+          })
+        );
+      });
+      console.log(sumOfPairs);
+      const maxValue = Math.max(...sumOfPairs);
+      const maxValueIndex = sumOfPairs.indexOf(maxValue);
+      winner = playerIndexWithDupe[maxValueIndex];
+      console.log(winner);
+
+      getCards(winner, winnerCards);
+      str = [];
+
+      str.push(
+        `${evalPlayer[winner].player} wins! ${
+          handRanking[evalPlayer[winner].result.bestHand]
+        } with ${[...winnerCards]}`
+      );
+      console.log(...str);
+      addTextBox(`\n\n${[...str]}`);
+    }
+  };
+  toFindDuplicates();
+
+  // console.log(
+  //   `${evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player} wins!`
+  // );
+  // addTextBox(
+  //   `\n${
+  //     evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
+  //   } wins!`
+  // );
+
+  // addTextBox("\nLowest rank number wins");
 };
+
+// endGame();
 
 // DOM
 btnInit.addEventListener("click", initGame);
