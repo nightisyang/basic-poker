@@ -293,20 +293,19 @@ const Evaluate = class {
 
     // log if conidtions for flush is found
     if (flush === true) {
-      this.result.bestHand = handRanking[4];
+      this.result.bestHand = 4;
       console.log(`${this.player} has A ${[str]} FLUSH !`);
-      ranking = 5;
-      return ranking;
     }
 
     // findStraight
     this.arrRank.forEach((val, i, arr) => {
-      let plus;
+      let isStraight;
 
+      // find sequence of number that is equal to firstNo (val) for straight
       for (let n = 1; n < 5; n++) {
-        plus = arr[i + n] - n;
+        isStraight = arr[i + n] - n;
 
-        if (val === plus) {
+        if (val === isStraight) {
           count += 1;
         } else {
           return;
@@ -328,6 +327,21 @@ const Evaluate = class {
 
     // log if conidtions for straight is found
 
+    // condition for royal flush
+    if (straight === 2 && flush === true) {
+      this.result.bestHand = 0;
+      console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
+      return;
+    }
+
+    // condition for straight flush
+    if (straight === 1 && flush === true) {
+      this.result.bestHand = 1;
+      console.log(`${this.player} has STRAIGHT FLUSHHHHHHH${[...str]}`);
+      return;
+    }
+
+    // condition for straight
     if (straight === 1) {
       this.result.bestHand = 5;
       console.log(`${this.player} has STRAIGHTS${[...str]}`);
@@ -376,8 +390,9 @@ const Evaluate = class {
       this.result.bestHand = 9;
       const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
       console.log(`${_player} highest card is ${highestCard}`);
-      resultRank.push(`${_arrRank[6]}`);
-      resultSuit.push(`${_arrSuit[6]}`);
+      resultIndexRank.push(_arrIndexOfRank[6]);
+      resultRank.push(_arrRank[6]);
+      resultSuit.push(_arrSuit[6]);
       return;
     }
 
@@ -615,22 +630,30 @@ const endGame = function () {
       (duplicates === true && typeOfDupe === "Pair") ||
       typeOfDupe === "Two pair" ||
       typeOfDupe === "Three of a kind" ||
-      typeOfDupe === "Straight"
+      typeOfDupe === "Straight" ||
+      typeOfDupe === "High Card"
     ) {
       let sumOfPairs = [];
 
+      // add up players cards and push to an array
       playerIndexWithDupe.forEach(function (val, i) {
         str = [];
         let playerPair = evalPlayer[val].result.resultIndexRank;
         getCards(val, str);
         console.log(`${evalPlayer[val].player} with ${[...str]}`);
-
+        addTextBox(`\n${evalPlayer[val].player} with ${[...str]}`);
         sumOfPairs.push(
           playerPair.reduce(function (acc, val) {
             return (acc += val);
           })
         );
       });
+
+      ///////////////////////////////////////////////////////////
+      // WHAT IF PLAYERS HAVE THE SAME CARDS E.G SAME HIGH CARD//
+      ///////////////////////////////////////////////////////////
+
+      // find the maximum value of added cards for each player, identify the index no which also corresponds to player index to find winner
       console.log(sumOfPairs);
       const maxValue = Math.max(...sumOfPairs);
       const maxValueIndex = sumOfPairs.indexOf(maxValue);
@@ -650,20 +673,7 @@ const endGame = function () {
     }
   };
   toFindDuplicates();
-
-  // console.log(
-  //   `${evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player} wins!`
-  // );
-  // addTextBox(
-  //   `\n${
-  //     evalPlayer[playerScore.indexOf(Math.min(...playerScore))].player
-  //   } wins!`
-  // );
-
-  // addTextBox("\nLowest rank number wins");
 };
-
-// endGame();
 
 // DOM
 btnInit.addEventListener("click", initGame);
