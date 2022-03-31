@@ -168,12 +168,15 @@ const Evaluate = class {
         resultIndexRank: [],
         resultRank: [],
         resultSuit: [],
+        ogIndex: [],
+        finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
       });
   }
 
   // METHODS
   findOutcomes() {
     this.findAll();
+    this.finalFive();
   }
 
   findAll() {
@@ -184,7 +187,7 @@ const Evaluate = class {
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let _arrIndexOfRank = this.arrIndexOfRank;
-    let { resultIndexRank, resultRank, resultSuit } = this.result;
+    let { resultIndexRank, resultRank, resultSuit, ogIndex } = this.result;
     let str = [];
     let ranking;
 
@@ -210,6 +213,7 @@ const Evaluate = class {
       resultIndexRank.push(_arrIndexOfRank[n]);
       resultRank.push(_arrRank[n]);
       resultSuit.push(_arrSuit[n]);
+      ogIndex.push(n);
     };
 
     // findFourOfAKind
@@ -372,6 +376,7 @@ const Evaluate = class {
       resultIndexRank.splice(0, 2);
       resultRank.splice(0, 2);
       resultSuit.splice(0, 2);
+      ogIndex.splice(0, 2);
 
       this.result.bestHand = 7;
       console.log(
@@ -393,10 +398,52 @@ const Evaluate = class {
       resultIndexRank.push(_arrIndexOfRank[6]);
       resultRank.push(_arrRank[6]);
       resultSuit.push(_arrSuit[6]);
+      ogIndex.push(6);
       return;
     }
 
     // return ranking;
+  }
+
+  finalFive() {
+    const cardDiff = 5 - this.result.resultRank.length;
+    // console.log(
+    //   `There's ${cardDiff} more cards required to make up the final 5 for ${this.player}`
+    // );
+
+    // What needs to be done
+    // Get index of best cards from original sorted hand in players.hand
+    // Delete those cards in players.hand and place in new array of evalPlayer
+    // Number of cards to be placed is cardDiff and should be taken from the end of array (highest rank cards)
+    // Don't mutate original evalPlayer.arr
+
+    // make shallow copy
+    const _arrRank = this.arrRank.slice();
+    const _arrSuit = this.arrSuit.slice();
+    const _arrIndexOfRank = this.arrIndexOfRank.slice();
+
+    // splice out best hand cards from set of 7 cards player + dealer
+    for (let i = this.result.ogIndex.length - 1; i > -1; i--) {
+      let cutThisIndex = this.result.ogIndex[i];
+      const spliceArr = function (n) {
+        _arrRank.splice(n, 1);
+        _arrSuit.splice(n, 1);
+        _arrIndexOfRank.splice(n, 1);
+      };
+
+      spliceArr(cutThisIndex);
+    }
+    // console.log(_arrRank, _arrSuit, _arrIndexOfRank);
+
+    // get the highest ranking cards to make up the final five, push to finalFive object
+    const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
+    for (let i = _arrRank.length - 1; i > _arrRank.length - 1 - cardDiff; i--) {
+      finalRank.push(_arrRank[i]);
+      finalSuit.push(_arrSuit[i]);
+      finalRankIdx.push(_arrIndexOfRank[i]);
+    }
+
+    // console.log(this.result.finalFive);
   }
 };
 
@@ -557,7 +604,9 @@ const endGame = function () {
     let playerIndexWithDupe = [];
     let str = [];
     let duplicates = false;
+    let stalemate = false;
     let typeOfDupe;
+    let sumCardsArr = [];
     let winner;
     let winnerCards = [];
 
@@ -613,66 +662,151 @@ const endGame = function () {
 
     // if duplicates are found, what are the best hands for players with duplicates?
     if (duplicates === true) {
-      // log
+      // log players hand with duplicate hand ranks
       playerIndexWithDupe.forEach(function (val, i) {
         str.push(`${evalPlayer[val].player}`);
       });
       console.log(`${[...str]} have are tied with ${typeOfDupe}`);
       addTextBox(`\n\n${[...str]} are tied with ${typeOfDupe}`);
 
-      let sumOfPairs = [];
-
       // add up players cards and push to an array
-      playerIndexWithDupe.forEach(function (val, i) {
-        // clear str
-        str = [];
+      const sumCards = (function () {
+        playerIndexWithDupe.forEach(function (val, i) {
+          // clear str
+          str = [];
 
-        // shorten variable to improve readability
-        let playerRanks = evalPlayer[val].result.resultIndexRank;
+          // shorten variable to improve readability
+          let playerRanks = evalPlayer[val].result.resultIndexRank;
 
-        // get cards for each player to print to console
-        getCards(val, str);
+          // get cards for each player to print to console
+          getCards(val, str);
 
-        // print to console
-        console.log(`${evalPlayer[val].player} with ${[...str]}`);
-        addTextBox(`\n${evalPlayer[val].player} with ${[...str]}`);
+          // print to console
+          console.log(`${evalPlayer[val].player} with ${[...str]}`);
+          addTextBox(`\n${evalPlayer[val].player} with ${[...str]}`);
 
-        // add up all the cards for each player and push results to array to analyze further
-        sumOfPairs.push(
-          playerRanks.reduce(function (acc, val) {
-            return (acc += val);
-          })
-        );
-      });
+          // add up all the cards for each player and push results to array to analyze further
+          sumCardsArr.push(
+            playerRanks.reduce(function (acc, val) {
+              return (acc += val);
+            })
+          );
+        });
+      })();
+
+      // find the maximum value of added cards for each player, identify the index no which also corresponds to player index to find winner
+      console.log(sumCardsArr);
+
+      // what is the largest value in the array
+      const maxValue = Math.max(...sumCardsArr);
+
+      // what is the index No of the largest value in that array
+      const maxValueIndex = sumCardsArr.indexOf(maxValue);
 
       ///////////////////////////////////////////////////////////
       // WHAT IF PLAYERS HAVE THE SAME CARDS E.G SAME HIGH CARD//
       ///////////////////////////////////////////////////////////
+      // If the same, then find stalemate
+      const findStalemate = (function () {
+        let stalemateArr = { staleRank: [], staleSuit: [], staleRankIdx: [] };
+        let playerIdxStale = [playerIndexWithDupe[maxValueIndex]];
+        let counter;
 
-      // find the maximum value of added cards for each player, identify the index no which also corresponds to player index to find winner
-      console.log(sumOfPairs);
+        const stalePlayers = new (class {
+          constructor(player, stalemateArr, finalFive) {
+            this.player = player;
+            this.stalemateArr = {
+              staleRank: [],
+              staleSuit: [],
+              staleRankIdx: [],
+            };
+            this.finalFive = finalFive;
+          }
+        })();
 
-      // what is the largest value in the array
-      const maxValue = Math.max(...sumOfPairs);
+        // Identify if there's a stalemate
+        sumCardsArr.filter(function (val, i, arr) {
+          // find values that are similar to the lowest score
+          if (val === maxValue && i !== maxValueIndex) {
+            // if a duplicate is found that is not in the same initial index found include it in array
 
-      // what is the index No of the largest value in that array
-      const maxValueIndex = sumOfPairs.indexOf(maxValue);
+            stalemate = true;
+            playerIdxStale.push(playerIndexWithDupe[i]);
+          }
+        });
+        if (stalemate === true) {
+          const getPlayer = function (arr) {
+            str = [];
+            for (let i = 0; i < arr.length; i++) {
+              const playerIndex = arr[i];
+              str.push(`${evalPlayer[playerIndex].player}`);
+            }
+          };
 
-      // which has the largest value, is also the winner
-      winner = playerIndexWithDupe[maxValueIndex];
+          getPlayer(playerIdxStale);
+          console.log(`There's a stalemate between ${[...str]}`);
 
-      // get the winner's cards
-      getCards(winner, winnerCards);
-      str = [];
+          // find all players that are stalemate DONE
+          // get their hands and compare if they are identical,
+          // if it is then compare finalFive, get winner if there's a highest card
+          // if final five is the same, then play the board, split the pot
 
-      // push winner to console
-      str.push(
-        `${evalPlayer[winner].player} wins! ${
-          handRanking[evalPlayer[winner].result.bestHand]
-        } with ${[...winnerCards]}`
-      );
-      console.log(...str);
-      addTextBox(`\n\n${[...str]}`);
+          // check if cards are from community cards e.g. dealer
+          // compare resultRank and resultSuit to dealer.hands
+
+          // const { staleRank, staleSuit, staleRankIdx } = stalemateArr;
+
+          // evalPlayer[playerIdxStale].result.resultIndexRank.forEach((val) =>
+          //   staleRankIdx.push(val)
+          // );
+          // evalPlayer[playerIdxStale].result.resultRank.forEach((val) =>
+          //   staleRank.push(val)
+          // );
+          // evalPlayer[playerIdxStale].result.resultSuit.forEach((val) =>
+          //   staleSuit.push(val)
+          // );
+          // for (let i = 0; i < staleRank.length; i++) {
+          //   const _staleRank = staleRank[i];
+          //   const _staleSuit = staleSuit[i];
+          //   const _staleRankIdx = staleRankIdx[i];
+          //   for (let n = 0; n < dealer.hand.length; n++) {
+          //     const {
+          //       rank: dealerRank,
+          //       suit: dealerSuit,
+          //       indexOfRank: dealerIdxRank,
+          //     } = dealer.hand[n];
+
+          //     if (
+          //       _staleRank === dealerRank &&
+          //       _staleSuit === dealerSuit &&
+          //       _staleRankIdx === dealerIdxRank
+          //     )
+          //       counter++;
+          //   }
+          // }
+
+          // if (counter === staleRank.length)
+          //   console.log("Playing the board, split the pot");
+        }
+      })();
+
+      if (stalemate === false) {
+        // which has the largest value, is also the winner
+        winner = playerIndexWithDupe[maxValueIndex];
+
+        // get the winner's cards
+        getCards(winner, winnerCards);
+        str = [];
+
+        // push winner to console
+        str.push(
+          `${evalPlayer[winner].player} wins! ${
+            handRanking[evalPlayer[winner].result.bestHand]
+          } with ${[...winnerCards]}`
+        );
+        console.log(...str);
+        addTextBox(`\n\n${[...str]}`);
+      }
     }
   };
   toFindDuplicates();
@@ -779,6 +913,8 @@ btnEval.addEventListener("click", function () {
     evaluateCards();
 
     endGame();
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
 
     // Skip from 9 to 11, no bets
     gameState = gameStateArr[11];
