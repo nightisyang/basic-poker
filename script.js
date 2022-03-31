@@ -538,7 +538,7 @@ const endGame = function () {
 
   // place player's best hand into playerScore arr
   for (let i = 0; i < evalPlayer.length; i++) {
-    // evalPlayer[i].findAll();
+    evalPlayer[i].findAll();
     const score = evalPlayer[i].result.bestHand;
     playerScore.push(score);
 
@@ -608,17 +608,11 @@ const endGame = function () {
       addTextBox(`\n\n${[...str]}`);
     }
 
-    // if duplicates are found, what are the best hands for players with duplicates?
-    if (
-      (duplicates === true && typeOfDupe === "Pair") ||
-      typeOfDupe === "Two pair" ||
-      typeOfDupe === "Three of a kind" ||
-      typeOfDupe === "Straight" ||
-      typeOfDupe === "High Card"
-    ) {
-      // what hands are duplicates
-      typeOfDupe = handRanking[lowestPlayerScore];
+    // what hands are duplicates, new variable to improve readability
+    typeOfDupe = handRanking[lowestPlayerScore];
 
+    // if duplicates are found, what are the best hands for players with duplicates?
+    if (duplicates === true) {
       // log
       playerIndexWithDupe.forEach(function (val, i) {
         str.push(`${evalPlayer[val].player}`);
@@ -681,6 +675,7 @@ const endGame = function () {
       addTextBox(`\n\n${[...str]}`);
     }
   };
+  toFindDuplicates();
 };
 
 // DOM
