@@ -398,13 +398,6 @@ const Evaluate = class {
 
     // return ranking;
   }
-
-  // findHighest() {
-  //   const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
-  //   resultRank.push(`${_arrRank[6]}`);
-  //   resultSuit.push(`${_arrSuit[6]}`);
-  //   console.log(`${this.player}'s highest card is ${highestCard}`);
-  // }
 };
 
 // Initialize dealer class
@@ -545,7 +538,7 @@ const endGame = function () {
 
   // place player's best hand into playerScore arr
   for (let i = 0; i < evalPlayer.length; i++) {
-    evalPlayer[i].findAll();
+    // evalPlayer[i].findAll();
     const score = evalPlayer[i].result.bestHand;
     playerScore.push(score);
 
@@ -615,17 +608,7 @@ const endGame = function () {
       addTextBox(`\n\n${[...str]}`);
     }
 
-    // if duplicates are found
-    if (duplicates === true) {
-      // what hands are duplicates
-      typeOfDupe = handRanking[lowestPlayerScore];
-      playerIndexWithDupe.forEach(function (val, i) {
-        str.push(`${evalPlayer[val].player}`);
-      });
-      console.log(`${[...str]} have are tied with ${typeOfDupe}`);
-      addTextBox(`\n\n${[...str]} are tied with ${typeOfDupe}`);
-    }
-
+    // if duplicates are found, what are the best hands for players with duplicates?
     if (
       (duplicates === true && typeOfDupe === "Pair") ||
       typeOfDupe === "Two pair" ||
@@ -633,17 +616,36 @@ const endGame = function () {
       typeOfDupe === "Straight" ||
       typeOfDupe === "High Card"
     ) {
+      // what hands are duplicates
+      typeOfDupe = handRanking[lowestPlayerScore];
+
+      // log
+      playerIndexWithDupe.forEach(function (val, i) {
+        str.push(`${evalPlayer[val].player}`);
+      });
+      console.log(`${[...str]} have are tied with ${typeOfDupe}`);
+      addTextBox(`\n\n${[...str]} are tied with ${typeOfDupe}`);
+
       let sumOfPairs = [];
 
       // add up players cards and push to an array
       playerIndexWithDupe.forEach(function (val, i) {
+        // clear str
         str = [];
-        let playerPair = evalPlayer[val].result.resultIndexRank;
+
+        // shorten variable to improve readability
+        let playerRanks = evalPlayer[val].result.resultIndexRank;
+
+        // get cards for each player to print to console
         getCards(val, str);
+
+        // print to console
         console.log(`${evalPlayer[val].player} with ${[...str]}`);
         addTextBox(`\n${evalPlayer[val].player} with ${[...str]}`);
+
+        // add up all the cards for each player and push results to array to analyze further
         sumOfPairs.push(
-          playerPair.reduce(function (acc, val) {
+          playerRanks.reduce(function (acc, val) {
             return (acc += val);
           })
         );
@@ -655,14 +657,21 @@ const endGame = function () {
 
       // find the maximum value of added cards for each player, identify the index no which also corresponds to player index to find winner
       console.log(sumOfPairs);
-      const maxValue = Math.max(...sumOfPairs);
-      const maxValueIndex = sumOfPairs.indexOf(maxValue);
-      winner = playerIndexWithDupe[maxValueIndex];
-      console.log(winner);
 
+      // what is the largest value in the array
+      const maxValue = Math.max(...sumOfPairs);
+
+      // what is the index No of the largest value in that array
+      const maxValueIndex = sumOfPairs.indexOf(maxValue);
+
+      // which has the largest value, is also the winner
+      winner = playerIndexWithDupe[maxValueIndex];
+
+      // get the winner's cards
       getCards(winner, winnerCards);
       str = [];
 
+      // push winner to console
       str.push(
         `${evalPlayer[winner].player} wins! ${
           handRanking[evalPlayer[winner].result.bestHand]
@@ -672,7 +681,6 @@ const endGame = function () {
       addTextBox(`\n\n${[...str]}`);
     }
   };
-  toFindDuplicates();
 };
 
 // DOM
