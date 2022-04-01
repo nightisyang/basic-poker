@@ -11,6 +11,8 @@ const btnTurn = document.querySelector(".btn-turn");
 const btnRiver = document.querySelector(".btn-river");
 const btnEval = document.querySelector(".btn-eval");
 const btnReset = document.querySelector(".btn-reset");
+const btnTurbo = document.querySelector(".btn-turbo");
+
 let textbox = document.querySelector(".textarea");
 
 // Design a game of poker
@@ -28,6 +30,9 @@ let activePlayers;
 let evalPlayer = [];
 let gameState;
 let stalePlayer = [];
+
+// for testing purposes
+let globalStalemate = false;
 
 const gameStateArr = [
   "reset",
@@ -593,6 +598,7 @@ const endGame = function () {
           // if a duplicate is found that is not in the same initial index found include it in array
 
           stalemate = true;
+          globalStalemate = true;
 
           playerIdxStaleArr.push(playerIndexWithDupe[i]);
         }
@@ -1019,8 +1025,69 @@ btnEval.addEventListener("click", function () {
 
 btnReset.addEventListener("click", function () {
   resetGame();
+
+  globalStalemate = false;
   console.log("Game reset, please initialize game to play!");
   textbox.value = "Reset! Press Initialize game to start!";
+});
+
+btnTurbo.addEventListener("click", function () {
+  const turboGame = function () {
+    activePlayers = 4;
+
+    addTextBox("\nInitializing game");
+    generateDeck(suit, rank);
+
+    fisYatesShuff();
+    console.log("Shuffling deck...");
+
+    addTextBox("\nDone, lets play!\nSelect number of players");
+
+    console.log(deck);
+
+    // Change game state after initialization
+
+    // Initialize dealer
+    initDealer();
+
+    initPlayers(activePlayers);
+
+    // Check which stage of the game is at
+    // First deal, initial number of players get dealt two cards
+    dealCard(activePlayers);
+    dealCard(activePlayers);
+
+    for (let i = 0; i < players.length; i++) {
+      players[i].showHand();
+    }
+
+    dealerFlop();
+    console.log(dealer.hand);
+    dealer.showHand();
+
+    dealerTurn();
+    console.log(dealer.hand);
+    dealer.showHand();
+
+    dealerRiver();
+    console.log(dealer.hand);
+    dealer.showHand();
+
+    evaluateCards();
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].findAll());
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
+
+    endGame();
+  };
+  let gameCounter = 0;
+
+  while (globalStalemate === false) {
+    gameCounter++;
+    console.log(gameCounter);
+    turboGame();
+  }
 });
 
 console.log(handRanking);
