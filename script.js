@@ -434,11 +434,10 @@ const Evaluate = class {
 
       spliceArr(cutThisIndex);
     }
-    // console.log(_arrRank, _arrSuit, _arrIndexOfRank);
 
     // get the highest ranking cards to make up the final five, push to finalFive object
     const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
-    for (let i = _arrRank.length - 1; i > _arrRank.length - 1 - cardDiff; i--) {
+    for (let i = _arrRank.length - 1; i > 1; i--) {
       finalRank.push(_arrRank[i]);
       finalSuit.push(_arrSuit[i]);
       finalRankIdx.push(_arrIndexOfRank[i]);
@@ -476,7 +475,7 @@ const endGame = function () {
 
   // place player's best hand into playerScore arr
   for (let i = 0; i < evalPlayer.length; i++) {
-    evalPlayer[i].findAll();
+    // evalPlayer[i].findAll();
     const score = evalPlayer[i].result.bestHand;
     playerScore.push(score);
 
@@ -654,6 +653,7 @@ const endGame = function () {
       const { resultRank, resultSuit, resultIndexRank, finalFive } =
         evalPlayer[val].result;
 
+      console.log(finalFive);
       // deconstruct properties in stalePlayer object
       const { staleRank, staleSuit, staleRankIdx } =
         stalePlayer[i].stalemateArr;
@@ -1003,7 +1003,11 @@ btnRiver.addEventListener("click", function () {
 btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
     evaluateCards();
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].findAll());
+
     evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
+
     endGame();
 
     // Skip from 9 to 11, no bets
