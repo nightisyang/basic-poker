@@ -29,6 +29,7 @@ let dealer;
 let activePlayers;
 let evalPlayer = [];
 let gameState;
+let stalePlayer = [];
 
 // for testing purposes
 let globalStalemate = false;
@@ -173,12 +174,15 @@ const Evaluate = class {
         resultIndexRank: [],
         resultRank: [],
         resultSuit: [],
+        ogIndex: [],
+        finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
       });
   }
 
   // METHODS
   findOutcomes() {
     this.findAll();
+    this.finalFive();
   }
 
   findAll() {
@@ -189,7 +193,7 @@ const Evaluate = class {
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let _arrIndexOfRank = this.arrIndexOfRank;
-    let { resultIndexRank, resultRank, resultSuit } = this.result;
+    let { resultIndexRank, resultRank, resultSuit, ogIndex } = this.result;
     let str = [];
     let ranking;
 
@@ -215,6 +219,7 @@ const Evaluate = class {
       resultIndexRank.push(_arrIndexOfRank[n]);
       resultRank.push(_arrRank[n]);
       resultSuit.push(_arrSuit[n]);
+      ogIndex.push(n);
     };
 
     // findFourOfAKind
@@ -377,6 +382,7 @@ const Evaluate = class {
       resultIndexRank.splice(0, 2);
       resultRank.splice(0, 2);
       resultSuit.splice(0, 2);
+      ogIndex.splice(0, 2);
 
       this.result.bestHand = 7;
       console.log(
@@ -398,6 +404,7 @@ const Evaluate = class {
       resultIndexRank.push(_arrIndexOfRank[6]);
       resultRank.push(_arrRank[6]);
       resultSuit.push(_arrSuit[6]);
+      ogIndex.push(6);
       return;
     }
 
@@ -1002,6 +1009,10 @@ btnRiver.addEventListener("click", function () {
 btnEval.addEventListener("click", function () {
   if (gameState === gameStateArr[9]) {
     evaluateCards();
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].findAll());
+
+    evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
 
     endGame();
 
