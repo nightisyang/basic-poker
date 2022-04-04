@@ -32,11 +32,13 @@ let gameState;
 let stalePlayer = [];
 
 // for testing purposes
-let globalStalemate = false;
+// let globalStalemate = false;
 // let globalRoyalFlush = false;
+let globalFourOfAKind = false;
+// let globalStraightFlush = false;
 // let globalFlush = false;
 // let globalFullHouse = false;
-let globalStraight = false;
+// let globalStraight = false;
 
 const gameStateArr = [
   "reset",
@@ -105,8 +107,7 @@ const resetGame = function () {
   dealer;
   evalPlayer = [];
   stalePlayer = [];
-  globalStalemate = false;
-  globalStraight = false;
+  globalFourOfAKind = false;
 };
 
 const suit = ["Clubs", "Diamonds", "Hearts", "Spades"];
@@ -210,7 +211,8 @@ const Evaluate = class {
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let _arrIndexOfRank = this.arrIndexOfRank;
-    let { resultIndexRank, resultRank, resultSuit, ogIndex } = this.result;
+    let { bestHand, resultIndexRank, resultRank, resultSuit, ogIndex } =
+      this.result;
     let str = [];
     let ranking;
 
@@ -219,14 +221,11 @@ const Evaluate = class {
     let straight = 0;
     let count = 0;
     let flush = false;
+    let royalFlush = false;
+    let straightFlush = false;
     let fullHouse = false;
+    let pair = false;
     let pairType = 0;
-
-    const resetAll = function () {
-      resultRank = [];
-      resultSuit = [];
-      str = [];
-    };
 
     const pushStrNArr = function (n) {
       // Place in string array
@@ -251,101 +250,175 @@ const Evaluate = class {
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         fourOfAKind = true;
+        globalFourOfAKind = true;
+
         for (let n = i; n < i + 4; n++) {
           pushStrNArr(n);
         }
-      } else {
-        return;
       }
     });
 
     // log if conidtions for four of a kind is found
-    if (str.length === 4) {
+    if (fourOfAKind === true) {
       this.result.bestHand = 2;
-
+      console.log(`${this.player} has FOUR OF A KIND ${[...str]}!`);
       return;
     }
 
     // find full house
-    let startIndex3Kind;
 
-    this.arrRank.forEach((val, i, arr) => {
-      // two parts first find 3 of a kind, second part find pair
+    if (fourOfAKind !== true) {
+      let startIndex3Kind;
 
-      // first part - find three similar cards
-      if (val === arr[i + 1] && val === arr[i + 2]) {
-        startIndex3Kind = i;
-        for (let n = i; n < i + 3; n++) {
-          pushStrNArr(n);
+      this.arrRank.forEach((val, i, arr) => {
+        // two parts first find 3 of a kind, second part find pair
+
+        // first part - find three similar cards
+        if (val === arr[i + 1] && val === arr[i + 2]) {
+          startIndex3Kind = i;
+          threeOfAKind = true;
+          for (let n = i; n < i + 3; n++) {
+            pushStrNArr(n);
+          }
+        } else {
+          return;
         }
-      } else {
-        return;
-      }
+      });
 
       // second part - find pair, ignore if start index is the same as 3 of a kind, will lead to duplicate
-      if (
-        val === arr[i + 1] &&
-        val !== arr[i + 2] &&
-        i !== startIndex3Kind + 1
-      ) {
-        for (let n = i; n < i + 2; n++) {
-          pushStrNArr(n);
+      this.arrRank.forEach((val, i, arr) => {
+        if (
+          threeOfAKind === true &&
+          val === arr[i + 1] &&
+          val !== arr[i + 2] &&
+          i !== startIndex3Kind + 1
+        ) {
+          for (let n = i; n < i + 2; n++) {
+            pushStrNArr(n);
+          }
+          fullHouse = true;
         }
-      }
-    });
+      });
+    }
 
     // log if conidtions for straight is found - logic for 3 of a kind overlaps, if str.length = 3
-    if (str.length === 3) {
+    if (threeOfAKind === true && str.length === 3) {
       this.result.bestHand = 6;
       console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
       return;
     }
 
     // log if conidtions for full house is found
-    if (str.length === 5) {
+    if (fullHouse === true && str.length === 5) {
       // globalFullHouse = true;
-      this.result.bestHand = handRanking[4];
+      this.result.bestHand = 3;
       console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
       fullHouse = true;
       return;
     }
 
     // find flush
-    const arrSuitSorted = this.arrSuit.slice().sort();
-    arrSuitSorted.forEach((val, i, arr) => {
-      if (
-        val === arr[i + 1] &&
-        val === arr[i + 2] &&
-        val === arr[i + 3] &&
-        val === arr[i + 4]
-      ) {
-        // globalFlush = true;
-        flush = true;
 
-        // before logging check if val === arr[i+ 5]
-        const logResults = function () {
-          for (let n = i; n < i + 5; n++) {
-            pushStrNArr(n);
-          }
-        };
+    // for (let i = 0; i < players.length; i++) {
+    //   evalPlayer[i].cards.sort(function (a, b) {
+    //     return a.this.arrSuit - b.indexOfRank;
+    //   });
+    // }
+    // clearPushStrNArr();
 
-        if (val === arr[i + 5]) {
-          i = i + 1;
-          logResults();
-        }
-        if (val === arr[i + 6]) {
-          i = i + 2;
-          logResults();
-        } else logResults();
-      } else {
-        return;
+    let flushIdx = [];
+    str = [];
+
+    for (let i = 0; i < suit.length; i++) {
+      // clearPushStrNArr();
+      // flushIdx = [];
+
+      // for (let n = 0; n < this.arrSuit.length; n++)
+      this.arrSuit.forEach(function (val, n) {
+        if (val === suit[i]) flushIdx.push(n);
+      });
+
+      if (flushIdx < 5) flushIdx = [];
+
+      if (flushIdx.length < 5) {
+        flushIdx = [];
       }
-    });
 
+      if (flushIdx.length === 5) {
+        flush = true;
+        // globalFlush = true;
+
+        this.result.bestHand = 4;
+
+        flushIdx.forEach((val) => {
+          pushStrNArr(val);
+        });
+
+        break;
+      }
+
+      if (flushIdx.length === 6) {
+        flush = true;
+        // globalFlush = true;
+
+        this.result.bestHand = 4;
+
+        flushIdx.splice(0, 1);
+        flushIdx.forEach((val) => {
+          pushStrNArr(val);
+        });
+
+        break;
+      }
+
+      if (flushIdx.length === 7) {
+        flush = true;
+        // globalFlush = true;
+
+        this.result.bestHand = 4;
+
+        flushIdx.splice(0, 2);
+        flushIdx.forEach((val) => {
+          pushStrNArr(val);
+        });
+
+        break;
+      }
+    }
     // log if conidtions for flush is found
     if (flush === true) {
-      this.result.bestHand = 4;
-      console.log(`${this.player} has A ${[str]} FLUSH !`);
+      let flushCount = 0;
+
+      let flushIsStraight;
+      for (let n = 1; n < 5; n++) {
+        flushIsStraight = resultIndexRank[n] - n;
+
+        if (resultIndexRank[0] === flushIsStraight) {
+          flushCount += 1;
+        }
+      }
+
+      if (flushCount === 4 && resultIndexRank[0] === 8) {
+        royalFlush = true;
+        // globalRoyalFlush = true;
+        this.result.bestHand = 0;
+        console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
+        return;
+      }
+
+      if (flushCount === 4) {
+        straightFlush = true;
+        // globalStraightFlush = true;
+        this.result.bestHand = 1;
+        console.log(`${this.player} has STRAIGHT FLUSHHHHHHH${[...str]}`);
+        return;
+      }
+
+      if (flushCount !== 4) {
+        this.result.bestHand = 4;
+        console.log(`${_player} has A ${resultSuit[0]} FLUSH ${[str]}!`);
+        return;
+      }
     }
 
     // findStraight
@@ -370,6 +443,7 @@ const Evaluate = class {
       }
 
       if (straight !== 0) {
+        str = [];
         for (let y = i; y < i + 5; y++) {
           pushStrNArr(y);
         }
@@ -377,25 +451,9 @@ const Evaluate = class {
     });
 
     // log if conidtions for straight is found
-
-    // condition for royal flush
-    if (straight === 2 && flush === true) {
-      // globalRoyalFlush = true;
-      this.result.bestHand = 0;
-      console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
-      return;
-    }
-
-    // condition for straight flush
-    if (straight === 1 && flush === true) {
-      this.result.bestHand = 1;
-      console.log(`${this.player} has STRAIGHT FLUSHHHHHHH${[...str]}`);
-      return;
-    }
-
     // condition for straight
     if (straight === 1) {
-      globalStraight = true;
+      // globalStraight = true;
       this.result.bestHand = 5;
       if (str.length === 10) {
         spliceErrors(0, 5);
@@ -411,24 +469,27 @@ const Evaluate = class {
     }
 
     // findPairs
-    this.arrRank.forEach(function (val, i, arr) {
-      if (val === arr[i + 1] && val !== arr[i + 2]) {
-        for (let n = i; n < i + 2; n++) {
-          pushStrNArr(n);
+    if (this.result.bestHand === 11) {
+      this.arrRank.forEach(function (val, i, arr) {
+        if (val === arr[i + 1] && val !== arr[i + 2]) {
+          pair = true;
+          for (let n = i; n < i + 2; n++) {
+            pushStrNArr(n);
+          }
+        } else {
+          return;
         }
-      } else {
-        return;
-      }
-    });
+      });
+    }
 
     // log if conidtions for different types of pairs are found
-    if (str.length === 4) {
+    if (pair === true && str.length === 4) {
       this.result.bestHand = 7;
       console.log(`${_player} has TWO PAIRS ${[...str]}!`);
       pairType = 2;
       return;
     }
-    if (str.length === 6) {
+    if (pair === true && str.length === 6) {
       // remove lowest two pairs
       spliceErrors(0, 2);
 
@@ -439,12 +500,13 @@ const Evaluate = class {
       pairType = 2;
       return;
     }
-    if (str.length === 2) {
+    if (pair === true && str.length === 2) {
       this.result.bestHand = 8;
       console.log(`${_player} has PAIR ${[...str]}!`);
       pairType = 1;
       return;
     }
+
     if (str.length === 0) {
       this.result.bestHand = 9;
       const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
@@ -471,29 +533,32 @@ const Evaluate = class {
     // Number of cards to be placed is cardDiff and should be taken from the end of array (highest rank cards)
     // Don't mutate original evalPlayer.arr
 
-    // make shallow copy
-    const _arrRank = this.arrRank.slice();
-    const _arrSuit = this.arrSuit.slice();
-    const _arrIndexOfRank = this.arrIndexOfRank.slice();
+    if (cardDiff > 0) {
+      // make shallow copy
+      const _arrRank = this.arrRank.slice();
+      const _arrSuit = this.arrSuit.slice();
+      const _arrIndexOfRank = this.arrIndexOfRank.slice();
 
-    // splice out best hand cards from set of 7 cards player + dealer
-    for (let i = this.result.ogIndex.length - 1; i > -1; i--) {
-      let cutThisIndex = this.result.ogIndex[i];
-      const spliceArr = function (n) {
-        _arrRank.splice(n, 1);
-        _arrSuit.splice(n, 1);
-        _arrIndexOfRank.splice(n, 1);
-      };
+      // splice out best hand cards from set of 7 cards player + dealer
+      for (let i = this.result.ogIndex.length - 1; i > -1; i--) {
+        let cutThisIndex = this.result.ogIndex[i];
+        const spliceArr = function (n) {
+          _arrRank.splice(n, 1);
+          _arrSuit.splice(n, 1);
+          _arrIndexOfRank.splice(n, 1);
+        };
 
-      spliceArr(cutThisIndex);
-    }
+        spliceArr(cutThisIndex);
+      }
 
-    // get the highest ranking cards to make up the final five, push to finalFive object
-    const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
-    for (let i = _arrRank.length - 1; i > 1; i--) {
-      finalRank.push(_arrRank[i]);
-      finalSuit.push(_arrSuit[i]);
-      finalRankIdx.push(_arrIndexOfRank[i]);
+      // get the highest ranking cards to make up the final five, push to finalFive object
+
+      const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
+      for (let i = _arrRank.length - 1; i > 1; i--) {
+        finalRank.push(_arrRank[i]);
+        finalSuit.push(_arrSuit[i]);
+        finalRankIdx.push(_arrIndexOfRank[i]);
+      }
     }
 
     // console.log(this.result.finalFive);
@@ -612,7 +677,6 @@ const endGame = function () {
 
           // shorten variable to improve readability
           let playerRanks = evalPlayer[val].result.resultIndexRank;
-
           // get cards for each player to print to console
           getCards(val, str);
 
@@ -647,7 +711,7 @@ const endGame = function () {
           // if a duplicate is found that is not in the same initial index found include it in array
 
           stalemate = true;
-          globalStalemate = true;
+          // globalStalemate = true;
 
           playerIdxStaleArr.push(playerIndexWithDupe[i]);
         }
@@ -1293,7 +1357,7 @@ btnTurbo.addEventListener("click", function () {
   };
   let gameCounter = 0;
 
-  while (globalStraight === false) {
+  while (globalFourOfAKind === false) {
     resetGame();
     gameCounter++;
     console.log(`Game No.${gameCounter}`);
