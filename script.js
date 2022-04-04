@@ -33,6 +33,10 @@ let stalePlayer = [];
 
 // for testing purposes
 let globalStalemate = false;
+// let globalRoyalFlush = false;
+// let globalFlush = false;
+// let globalFullHouse = false;
+let globalStraight = false;
 
 const gameStateArr = [
   "reset",
@@ -99,6 +103,10 @@ const resetGame = function () {
   players = [];
   activePlayers;
   dealer;
+  evalPlayer = [];
+  stalePlayer = [];
+  globalStalemate = false;
+  globalStraight = false;
 };
 
 const suit = ["Clubs", "Diamonds", "Hearts", "Spades"];
@@ -163,20 +171,29 @@ const PlayerCl = class {
 
 // Evaluate Class prototype
 const Evaluate = class {
-  constructor(player, cards, arrIndexOfRank, arrSuit, arrRank, result) {
-    (this.player = player),
-      (this.cards = []),
-      (this.arrIndexOfRank = []),
-      (this.arrSuit = []),
-      (this.arrRank = []),
-      (this.result = {
-        bestHand: 11,
-        resultIndexRank: [],
-        resultRank: [],
-        resultSuit: [],
-        ogIndex: [],
-        finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
-      });
+  constructor(
+    player,
+    playerInitIndex,
+    cards,
+    arrIndexOfRank,
+    arrSuit,
+    arrRank,
+    result
+  ) {
+    this.player = player;
+    this.playerInitIndex = playerInitIndex;
+    this.cards = [];
+    this.arrIndexOfRank = [];
+    this.arrSuit = [];
+    this.arrRank = [];
+    this.result = {
+      bestHand: 11,
+      resultIndexRank: [],
+      resultRank: [],
+      resultSuit: [],
+      ogIndex: [],
+      finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
+    };
   }
 
   // METHODS
@@ -220,6 +237,14 @@ const Evaluate = class {
       resultRank.push(_arrRank[n]);
       resultSuit.push(_arrSuit[n]);
       ogIndex.push(n);
+    };
+
+    const spliceErrors = function (startNo, noOfCards) {
+      str.splice(startNo, noOfCards);
+      resultIndexRank.splice(startNo, noOfCards);
+      resultRank.splice(startNo, noOfCards);
+      resultSuit.splice(startNo, noOfCards);
+      ogIndex.splice(startNo, noOfCards);
     };
 
     // findFourOfAKind
@@ -278,6 +303,7 @@ const Evaluate = class {
 
     // log if conidtions for full house is found
     if (str.length === 5) {
+      // globalFullHouse = true;
       this.result.bestHand = handRanking[4];
       console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
       fullHouse = true;
@@ -288,17 +314,32 @@ const Evaluate = class {
     const arrSuitSorted = this.arrSuit.slice().sort();
     arrSuitSorted.forEach((val, i, arr) => {
       if (
-        val === val[i + 1] &&
-        val === val[i + 2] &&
-        val === val[i + 3] &&
-        val === val[i + 4]
+        val === arr[i + 1] &&
+        val === arr[i + 2] &&
+        val === arr[i + 3] &&
+        val === arr[i + 4]
       ) {
+        // globalFlush = true;
         flush = true;
+
+        // before logging check if val === arr[i+ 5]
+        const logResults = function () {
+          for (let n = i; n < i + 5; n++) {
+            pushStrNArr(n);
+          }
+        };
+
+        if (val === arr[i + 5]) {
+          i = i + 1;
+          logResults();
+        }
+        if (val === arr[i + 6]) {
+          i = i + 2;
+          logResults();
+        } else logResults();
       } else {
         return;
       }
-
-      if (flush === true) str.push(`${val}`);
     });
 
     // log if conidtions for flush is found
@@ -308,7 +349,7 @@ const Evaluate = class {
     }
 
     // findStraight
-    this.arrRank.forEach((val, i, arr) => {
+    this.arrIndexOfRank.forEach((val, i, arr) => {
       let isStraight;
 
       // find sequence of number that is equal to firstNo (val) for straight
@@ -339,6 +380,7 @@ const Evaluate = class {
 
     // condition for royal flush
     if (straight === 2 && flush === true) {
+      // globalRoyalFlush = true;
       this.result.bestHand = 0;
       console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
       return;
@@ -353,7 +395,17 @@ const Evaluate = class {
 
     // condition for straight
     if (straight === 1) {
+      globalStraight = true;
       this.result.bestHand = 5;
+      if (str.length === 10) {
+        spliceErrors(0, 5);
+      }
+      if (str.length === 15) {
+        spliceErrors(0, 10);
+      }
+      if (str.length !== 5) {
+        console.error("Look into straights, more than 5 cards");
+      }
       console.log(`${this.player} has STRAIGHTS${[...str]}`);
       return;
     }
@@ -378,11 +430,7 @@ const Evaluate = class {
     }
     if (str.length === 6) {
       // remove lowest two pairs
-      str.splice(0, 2);
-      resultIndexRank.splice(0, 2);
-      resultRank.splice(0, 2);
-      resultSuit.splice(0, 2);
-      ogIndex.splice(0, 2);
+      spliceErrors(0, 2);
 
       this.result.bestHand = 7;
       console.log(
@@ -453,8 +501,9 @@ const Evaluate = class {
 };
 
 const StalePlayers = class {
-  constructor(player, stalemateArr, finalFive) {
+  constructor(player, playerInitIndex, stalemateArr, finalFive) {
     this.player = player;
+    this.playerInitIndex = playerInitIndex;
     this.stalemateArr = {
       staleRank: [],
       staleSuit: [],
@@ -637,20 +686,20 @@ const endGame = function () {
         str.push(`${evalPlayer[playerIndex].player}`);
       }
     };
-
     getPlayer(playerIdxStaleArr);
     console.log(`There's a stalemate between ${[...str]}`);
-    addTextBox(`\nThere's a stalemate between ${[...str]}`);
+    addTextBox(`\n\nThere's a stalemate between ${[...str]}`);
 
     // initialize stalePlayers and port over all relevant data
     for (let i = 0; i < playerIdxStaleArr.length; i++) {
       stalePlayer[i] = new StalePlayers(
         evalPlayer[playerIdxStaleArr[i]].player,
+        evalPlayer[i].playerInitIndex,
         {},
         {}
       );
 
-      // console.log(stalePlayer[i]);
+      console.log(stalePlayer[i]);
     }
 
     // port over data
@@ -665,7 +714,7 @@ const endGame = function () {
         stalePlayer[i].stalemateArr;
 
       // assign
-      Object.assign(finalFive, stalePlayer[i].finalFive);
+      Object.assign(stalePlayer[i].finalFive, finalFive);
 
       // loop over each element in evalPlayer and push into stalePlayer
       resultRank.forEach(function (val, x) {
@@ -676,8 +725,22 @@ const endGame = function () {
       console.log(stalePlayer[i]);
     });
 
-    // have methods in stalePlayer class and execute it here
+    for (let i = 0; i < stalePlayer.length; i++) {
+      str = [];
+      const { finalRank, finalSuit, finalRankIdx } = stalePlayer[i].finalFive;
 
+      for (let n = 0; n < finalRank.length; n++) {
+        str.push(`${finalRank[n]} of ${finalSuit[n]}`);
+      }
+      console.log(
+        `${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
+      );
+      addTextBox(
+        `\n${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
+      );
+    }
+    // redundant code UNFORTUNATELY YOU SPEND 2 DAYS ON THIS //
+    /* 
     let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
 
     // get their hands and compare if they are identical,
@@ -703,8 +766,6 @@ const endGame = function () {
 
         temp = [];
       };
-
-      console.log(`Card ${i}`);
 
       // for each player, staleRank
       for (let n = 0; n < stalePlayer.length; n++) {
@@ -732,49 +793,199 @@ const endGame = function () {
     }
 
     console.log(compare);
-
-    // if it is then compare finalFive, get winner if there's a highest card
-    // if final five is the same, then play the board, split the pot
-
-    // check if cards are from community cards e.g. dealer
-    // compare resultRank and resultSuit to dealer.hands
-
-    // const { staleRank, staleSuit, staleRankIdx } = stalemateArr;
-
-    // evalPlayer[playerIdxStaleArr].result.resultIndexRank.forEach((val) =>
-    //   staleRankIdx.push(val)
-    // );
-    // evalPlayer[playerIdxStaleArr].result.resultRank.forEach((val) =>
-    //   staleRank.push(val)
-    // );
-    // evalPlayer[playerIdxStaleArr].result.resultSuit.forEach((val) =>
-    //   staleSuit.push(val)
-    // );
-    // for (let i = 0; i < staleRank.length; i++) {
-    //   const _staleRank = staleRank[i];
-    //   const _staleSuit = staleSuit[i];
-    //   const _staleRankIdx = staleRankIdx[i];
-    //   for (let n = 0; n < dealer.hand.length; n++) {
-    //     const {
-    //       rank: dealerRank,
-    //       suit: dealerSuit,
-    //       indexOfRank: dealerIdxRank,
-    //     } = dealer.hand[n];
-
-    //     if (
-    //       _staleRank === dealerRank &&
-    //       _staleSuit === dealerSuit &&
-    //       _staleRankIdx === dealerIdxRank
-    //     )
-    //       counter++;
-    //   }
-    // }
-
-    // if (counter === staleRank.length)
-    //   console.log("Playing the board, split the pot");
+    */
   };
 
-  if (stalemate === true) dealingStalemate();
+  const breakStalemate = function () {
+    let compareRankIdx = [];
+
+    //   let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
+
+    //   // get their hands and compare if they are identical,
+    //   const cardDisputeLength = stalePlayer[0].finalFive.finalRank.length;
+
+    //   // loop through each card
+    //   for (let i = 0; i < cardDisputeLength; i++) {
+    //     let _tempRank = [];
+    //     let _tempSuit = [];
+    //     let _tempRankIdx = [];
+
+    //     // two part function package it in temp array in loop, then push to compare after loop
+    //     const packIntoArr = function (data, temp) {
+    //       // pack in temp
+    //       temp.push(data[i]);
+    //     };
+
+    //     const pushIntoArr = function (destinationArr, temp) {
+    //       // push to destination
+    //       destinationArr.push(temp);
+
+    //       temp = [];
+    //     };
+
+    //     // for each player, staleRank
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalRank } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalRank, _tempRank);
+    //     }
+    //     pushIntoArr(compare.cardRank, _tempRank);
+
+    //     // for each player, staleSuit
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalSuit } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalSuit, _tempSuit);
+    //     }
+    //     pushIntoArr(compare.cardSuit, _tempSuit);
+
+    //     // for each player, staleRankIdx
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalRankIdx } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalRankIdx, _tempRankIdx);
+    //     }
+    //     pushIntoArr(compare.cardRankInx, _tempRankIdx);
+    //   }
+
+    //   console.log(compare);
+
+    //   const cardsInComparison = compare.cardRankInx[0].length;
+    //   // const compareSet = Set(compare.cardRankInx).length;
+
+    //   console.log(compare.cardRankInx);
+    //   console.log(cardsInComparison);
+
+    // console.log(cardsInComparison - compareSet);
+
+    // use the first player as template
+    const { finalRank, finalSuit, finalRankIdx } = stalePlayer[0].finalFive;
+    let kickerTie;
+
+    for (let i = 0; i < finalRankIdx.length; i++) {
+      kickerTie = false;
+      compareRankIdx = [];
+      console.log(`Kicker ${i + 1}`);
+
+      compareRankIdx.push(finalRankIdx[i]);
+
+      // place kicker of other players (other than player 1) in array
+      for (let n = 1; n < stalePlayer.length; n++) {
+        let {
+          finalRank: compareFinalRank,
+          finalSuit: compareFinalSuit,
+          finalRankIdx: comparefinalRankIdx,
+        } = stalePlayer[n].finalFive;
+
+        compareRankIdx.push(comparefinalRankIdx[i]);
+
+        /*
+        // let tempWinner = 0;
+
+        // if (val > comparefinalRankIdx[i]) {
+        //   console.log(
+        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
+        //       i + 1
+        //     } and has the higher card ${val} ${finalRank[i]} of ${finalSuit[i]}`
+        //   );
+        //   return;
+        // } else if (val < comparefinalRankIdx[i]) {
+        //   tempWinner = n;
+        //   console.log(
+        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
+        //       i + 1
+        //     } and has the higher card ${comparefinalRankIdx[i]} ${
+        //       compareFinalRank[i]
+        //     } of ${compareFinalSuit[i]}`
+        //   );
+        //   return;
+        // }*/
+      }
+
+      console.log(compareRankIdx);
+      const maxValKicker = Math.max(...compareRankIdx);
+      const idxMaxValKicker = compareRankIdx.indexOf(maxValKicker);
+      console.log(`The maximum value in kicker ${i + 1} is ${maxValKicker}`);
+
+      for (let x = 0; x < compareRankIdx.length; x++) {
+        // find if there are other values equal to max value in array that is not the same index no as max value
+        if (compareRankIdx[x] === maxValKicker && x !== idxMaxValKicker) {
+          kickerTie = true;
+          console.log(
+            "There is a duplicate, please look into the next set of kicker to break the tie"
+          );
+        }
+      }
+      if (kickerTie === true) {
+        console.log(
+          "Finding other players that have lower rank kicker than max "
+        );
+
+        for (let y = compareRankIdx.length; y > -1; y--) {
+          if (compareRankIdx[y] < maxValKicker) {
+            console.log(
+              `${stalePlayer[y].player} has low kicker, delete player from StalePlayer`
+            );
+            stalePlayer.splice(y, 1);
+            console.log(stalePlayer);
+          }
+        }
+      }
+      if (kickerTie === false) {
+        console.log(`${stalePlayer[idxMaxValKicker].player} wins! `);
+        addTextBox(
+          `\n\n${
+            stalePlayer[idxMaxValKicker].player
+          } has the highest in Kicker No.${i + 1}! ${
+            stalePlayer[idxMaxValKicker].player
+          } wins!`
+        );
+        break;
+      }
+    }
+
+    if (
+      (stalePlayer.length > 1 && kickerTie === true) ||
+      finalRankIdx.length === 0
+    ) {
+      str = [];
+      for (let i = 0; i < stalePlayer.length; i++) {
+        str.push(`${stalePlayer[i].player}`);
+      }
+      console.log(`${[...str]} split the pot!`);
+      addTextBox(`\n\n${[...str]} split the pot!`);
+    }
+
+    // let playTheBoard = false;
+    // console.log(playTheBoard);
+
+    // stalePlayer.forEach(function (val, i, arr) {
+    //   let { staleSuit } = arr[i].stalemateArr;
+    //   console.log(staleSuit);
+    //   staleSuit.forEach(function (suit, n) {
+    //     if (suit === staleSuit[n + 1]) {
+    //       console.log(suit);
+    //       console.log(staleSuit[n + 1]);
+    //       playTheBoard = true;
+    //     }
+    //     if (suit !== staleSuit[n + 1]) {
+    //       playTheBoard = false;
+    //       return;
+    //     }
+    //   });
+    // });
+
+    // if (playTheBoard === false) {
+    //   console.log("find the other high cards");
+    // } else if (playTheBoard === true) {
+    //   console.log("split the pot");
+    // }
+  };
+
+  if (stalemate === true) {
+    dealingStalemate();
+    breakStalemate();
+  }
 };
 
 // Initialize dealer class
@@ -879,7 +1090,7 @@ const evaluateCards = function () {
 
   // create new object and concat with dealer's hand
   for (let i = 0; i < players.length; i++) {
-    evalPlayer[i] = new Evaluate(players[i].playerNo, [], [], [], {});
+    evalPlayer[i] = new Evaluate(players[i].playerNo, i, [], [], [], {});
   }
 
   // push hands into evalPlayer.cards
@@ -1026,7 +1237,6 @@ btnEval.addEventListener("click", function () {
 btnReset.addEventListener("click", function () {
   resetGame();
 
-  globalStalemate = false;
   console.log("Game reset, please initialize game to play!");
   textbox.value = "Reset! Press Initialize game to start!";
 });
@@ -1083,9 +1293,11 @@ btnTurbo.addEventListener("click", function () {
   };
   let gameCounter = 0;
 
-  while (globalStalemate === false) {
+  while (globalStraight === false) {
+    resetGame();
     gameCounter++;
-    console.log(gameCounter);
+    console.log(`Game No.${gameCounter}`);
+    addTextBox(`\n\nGame No.${gameCounter}`);
     turboGame();
   }
 });
