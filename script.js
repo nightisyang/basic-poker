@@ -34,9 +34,9 @@ let stalePlayer = [];
 // for testing purposes
 // let globalStalemate = false;
 // let globalRoyalFlush = false;
-let globalFourOfAKind = false;
+// let globalFourOfAKind = false;
 // let globalStraightFlush = false;
-// let globalFlush = false;
+let globalFlush = false;
 // let globalFullHouse = false;
 // let globalStraight = false;
 
@@ -107,7 +107,7 @@ const resetGame = function () {
   dealer;
   evalPlayer = [];
   stalePlayer = [];
-  globalFourOfAKind = false;
+  globalFlush = false;
 };
 
 const suit = ["Clubs", "Diamonds", "Hearts", "Spades"];
@@ -250,7 +250,7 @@ const Evaluate = class {
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         fourOfAKind = true;
-        globalFourOfAKind = true;
+        // globalFourOfAKind = true;
 
         for (let n = i; n < i + 4; n++) {
           pushStrNArr(n);
@@ -331,66 +331,46 @@ const Evaluate = class {
 
     for (let i = 0; i < suit.length; i++) {
       // clearPushStrNArr();
-      // flushIdx = [];
+      flushIdx = [];
 
       // for (let n = 0; n < this.arrSuit.length; n++)
       this.arrSuit.forEach(function (val, n) {
         if (val === suit[i]) flushIdx.push(n);
       });
 
-      if (flushIdx < 5) flushIdx = [];
-
       if (flushIdx.length < 5) {
         flushIdx = [];
       }
 
-      if (flushIdx.length === 5) {
+      if (
+        flushIdx.length === 5 ||
+        flushIdx.length === 6 ||
+        flushIdx.length === 7
+      ) {
         flush = true;
-        // globalFlush = true;
+        globalFlush = true;
 
-        this.result.bestHand = 4;
-
+        // this.result.bestHand = 4;
         flushIdx.forEach((val) => {
           pushStrNArr(val);
         });
-
-        break;
       }
 
-      if (flushIdx.length === 6) {
-        flush = true;
-        // globalFlush = true;
+      // if (flushIdx.length === 6 || flushIdx.length === 7) {
+      //   flush = true;
+      //   // globalFlush = true;
 
-        this.result.bestHand = 4;
-
-        flushIdx.splice(0, 1);
-        flushIdx.forEach((val) => {
-          pushStrNArr(val);
-        });
-
-        break;
-      }
-
-      if (flushIdx.length === 7) {
-        flush = true;
-        // globalFlush = true;
-
-        this.result.bestHand = 4;
-
-        flushIdx.splice(0, 2);
-        flushIdx.forEach((val) => {
-          pushStrNArr(val);
-        });
-
-        break;
-      }
+      //   flushIdx.forEach((val) => {
+      //     pushStrNArr(val);
+      //   });
+      // }
     }
     // log if conidtions for flush is found
     if (flush === true) {
       let flushCount = 0;
 
       let flushIsStraight;
-      for (let n = 1; n < 5; n++) {
+      for (let n = 1; n < resultIndexRank.length; n++) {
         flushIsStraight = resultIndexRank[n] - n;
 
         if (resultIndexRank[0] === flushIsStraight) {
@@ -398,7 +378,10 @@ const Evaluate = class {
         }
       }
 
-      if (flushCount === 4 && resultIndexRank[0] === 8) {
+      if (flushCount === 5) spliceErrors(1, 0);
+      if (flushCount === 6) spliceErrors(2, 0);
+
+      if (resultIndexRank[0] === 8) {
         royalFlush = true;
         // globalRoyalFlush = true;
         this.result.bestHand = 0;
@@ -406,7 +389,7 @@ const Evaluate = class {
         return;
       }
 
-      if (flushCount === 4) {
+      if (flushCount === 4 || flushCount === 5 || flushCount === 6) {
         straightFlush = true;
         // globalStraightFlush = true;
         this.result.bestHand = 1;
@@ -414,7 +397,7 @@ const Evaluate = class {
         return;
       }
 
-      if (flushCount !== 4) {
+      if (flushCount < 4) {
         this.result.bestHand = 4;
         console.log(`${_player} has A ${resultSuit[0]} FLUSH ${[str]}!`);
         return;
@@ -1357,7 +1340,7 @@ btnTurbo.addEventListener("click", function () {
   };
   let gameCounter = 0;
 
-  while (globalFourOfAKind === false) {
+  while (globalFlush === false) {
     resetGame();
     gameCounter++;
     console.log(`Game No.${gameCounter}`);
