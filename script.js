@@ -32,7 +32,13 @@ let gameState;
 let stalePlayer = [];
 
 // for testing purposes
-let globalStalemate = false;
+// let globalStalemate = false;
+// let globalRoyalFlush = false;
+// let globalFourOfAKind = false;
+// let globalStraightFlush = false;
+let globalFlush = false;
+// let globalFullHouse = false;
+// let globalStraight = false;
 
 const gameStateArr = [
   "reset",
@@ -99,6 +105,9 @@ const resetGame = function () {
   players = [];
   activePlayers;
   dealer;
+  evalPlayer = [];
+  stalePlayer = [];
+  globalFlush = false;
 };
 
 const suit = ["Clubs", "Diamonds", "Hearts", "Spades"];
@@ -163,20 +172,29 @@ const PlayerCl = class {
 
 // Evaluate Class prototype
 const Evaluate = class {
-  constructor(player, cards, arrIndexOfRank, arrSuit, arrRank, result) {
-    (this.player = player),
-      (this.cards = []),
-      (this.arrIndexOfRank = []),
-      (this.arrSuit = []),
-      (this.arrRank = []),
-      (this.result = {
-        bestHand: 11,
-        resultIndexRank: [],
-        resultRank: [],
-        resultSuit: [],
-        ogIndex: [],
-        finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
-      });
+  constructor(
+    player,
+    playerInitIndex,
+    cards,
+    arrIndexOfRank,
+    arrSuit,
+    arrRank,
+    result
+  ) {
+    this.player = player;
+    this.playerInitIndex = playerInitIndex;
+    this.cards = [];
+    this.arrIndexOfRank = [];
+    this.arrSuit = [];
+    this.arrRank = [];
+    this.result = {
+      bestHand: 11,
+      resultIndexRank: [],
+      resultRank: [],
+      resultSuit: [],
+      ogIndex: [],
+      finalFive: { finalRank: [], finalSuit: [], finalRankIdx: [] },
+    };
   }
 
   // METHODS
@@ -193,7 +211,8 @@ const Evaluate = class {
     let _arrRank = this.arrRank;
     let _arrSuit = this.arrSuit;
     let _arrIndexOfRank = this.arrIndexOfRank;
-    let { resultIndexRank, resultRank, resultSuit, ogIndex } = this.result;
+    let { bestHand, resultIndexRank, resultRank, resultSuit, ogIndex } =
+      this.result;
     let str = [];
     let ranking;
 
@@ -202,14 +221,11 @@ const Evaluate = class {
     let straight = 0;
     let count = 0;
     let flush = false;
+    let royalFlush = false;
+    let straightFlush = false;
     let fullHouse = false;
+    let pair = false;
     let pairType = 0;
-
-    const resetAll = function () {
-      resultRank = [];
-      resultSuit = [];
-      str = [];
-    };
 
     const pushStrNArr = function (n) {
       // Place in string array
@@ -222,93 +238,174 @@ const Evaluate = class {
       ogIndex.push(n);
     };
 
+    const spliceErrors = function (startNo, noOfCards) {
+      str.splice(startNo, noOfCards);
+      resultIndexRank.splice(startNo, noOfCards);
+      resultRank.splice(startNo, noOfCards);
+      resultSuit.splice(startNo, noOfCards);
+      ogIndex.splice(startNo, noOfCards);
+    };
+
     // findFourOfAKind
     this.arrRank.forEach((val, i, arr) => {
       if (val === arr[i + 1] && val === arr[i + 2] && val === arr[i + 3]) {
         fourOfAKind = true;
+        // globalFourOfAKind = true;
+
         for (let n = i; n < i + 4; n++) {
           pushStrNArr(n);
         }
-      } else {
-        return;
       }
     });
 
     // log if conidtions for four of a kind is found
-    if (str.length === 4) {
+    if (fourOfAKind === true) {
       this.result.bestHand = 2;
-
+      console.log(`${this.player} has FOUR OF A KIND ${[...str]}!`);
       return;
     }
 
     // find full house
-    let startIndex3Kind;
 
-    this.arrRank.forEach((val, i, arr) => {
-      // two parts first find 3 of a kind, second part find pair
+    if (fourOfAKind !== true) {
+      let startIndex3Kind;
 
-      // first part - find three similar cards
-      if (val === arr[i + 1] && val === arr[i + 2]) {
-        startIndex3Kind = i;
-        for (let n = i; n < i + 3; n++) {
-          pushStrNArr(n);
+      this.arrRank.forEach((val, i, arr) => {
+        // two parts first find 3 of a kind, second part find pair
+
+        // first part - find three similar cards
+        if (val === arr[i + 1] && val === arr[i + 2]) {
+          startIndex3Kind = i;
+          threeOfAKind = true;
+          for (let n = i; n < i + 3; n++) {
+            pushStrNArr(n);
+          }
+        } else {
+          return;
         }
-      } else {
-        return;
-      }
+      });
 
       // second part - find pair, ignore if start index is the same as 3 of a kind, will lead to duplicate
-      if (
-        val === arr[i + 1] &&
-        val !== arr[i + 2] &&
-        i !== startIndex3Kind + 1
-      ) {
-        for (let n = i; n < i + 2; n++) {
-          pushStrNArr(n);
+      this.arrRank.forEach((val, i, arr) => {
+        if (
+          threeOfAKind === true &&
+          val === arr[i + 1] &&
+          val !== arr[i + 2] &&
+          i !== startIndex3Kind + 1
+        ) {
+          for (let n = i; n < i + 2; n++) {
+            pushStrNArr(n);
+          }
+          fullHouse = true;
         }
-      }
-    });
+      });
+    }
 
     // log if conidtions for straight is found - logic for 3 of a kind overlaps, if str.length = 3
-    if (str.length === 3) {
+    if (threeOfAKind === true && str.length === 3) {
       this.result.bestHand = 6;
       console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
       return;
     }
 
     // log if conidtions for full house is found
-    if (str.length === 5) {
-      this.result.bestHand = handRanking[4];
+    if (fullHouse === true && str.length === 5) {
+      // globalFullHouse = true;
+      this.result.bestHand = 3;
       console.log(`${this.player} has FULL HOUSE ${[...str]}!`);
       fullHouse = true;
       return;
     }
 
     // find flush
-    const arrSuitSorted = this.arrSuit.slice().sort();
-    arrSuitSorted.forEach((val, i, arr) => {
+
+    // for (let i = 0; i < players.length; i++) {
+    //   evalPlayer[i].cards.sort(function (a, b) {
+    //     return a.this.arrSuit - b.indexOfRank;
+    //   });
+    // }
+    // clearPushStrNArr();
+
+    let flushIdx = [];
+    str = [];
+
+    for (let i = 0; i < suit.length; i++) {
+      // clearPushStrNArr();
+      flushIdx = [];
+
+      // for (let n = 0; n < this.arrSuit.length; n++)
+      this.arrSuit.forEach(function (val, n) {
+        if (val === suit[i]) flushIdx.push(n);
+      });
+
+      if (flushIdx.length < 5) {
+        flushIdx = [];
+      }
+
       if (
-        val === val[i + 1] &&
-        val === val[i + 2] &&
-        val === val[i + 3] &&
-        val === val[i + 4]
+        flushIdx.length === 5 ||
+        flushIdx.length === 6 ||
+        flushIdx.length === 7
       ) {
         flush = true;
-      } else {
+        globalFlush = true;
+
+        // this.result.bestHand = 4;
+        flushIdx.forEach((val) => {
+          pushStrNArr(val);
+        });
+      }
+
+      // if (flushIdx.length === 6 || flushIdx.length === 7) {
+      //   flush = true;
+      //   // globalFlush = true;
+
+      //   flushIdx.forEach((val) => {
+      //     pushStrNArr(val);
+      //   });
+      // }
+    }
+    // log if conidtions for flush is found
+    if (flush === true) {
+      let flushCount = 0;
+
+      let flushIsStraight;
+      for (let n = 1; n < resultIndexRank.length; n++) {
+        flushIsStraight = resultIndexRank[n] - n;
+
+        if (resultIndexRank[0] === flushIsStraight) {
+          flushCount += 1;
+        }
+      }
+
+      if (flushCount === 5) spliceErrors(1, 0);
+      if (flushCount === 6) spliceErrors(2, 0);
+
+      if (resultIndexRank[0] === 8) {
+        royalFlush = true;
+        // globalRoyalFlush = true;
+        this.result.bestHand = 0;
+        console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
         return;
       }
 
-      if (flush === true) str.push(`${val}`);
-    });
+      if (flushCount === 4 || flushCount === 5 || flushCount === 6) {
+        straightFlush = true;
+        // globalStraightFlush = true;
+        this.result.bestHand = 1;
+        console.log(`${this.player} has STRAIGHT FLUSHHHHHHH${[...str]}`);
+        return;
+      }
 
-    // log if conidtions for flush is found
-    if (flush === true) {
-      this.result.bestHand = 4;
-      console.log(`${this.player} has A ${[str]} FLUSH !`);
+      if (flushCount < 4) {
+        this.result.bestHand = 4;
+        console.log(`${_player} has A ${resultSuit[0]} FLUSH ${[str]}!`);
+        return;
+      }
     }
 
     // findStraight
-    this.arrRank.forEach((val, i, arr) => {
+    this.arrIndexOfRank.forEach((val, i, arr) => {
       let isStraight;
 
       // find sequence of number that is equal to firstNo (val) for straight
@@ -329,6 +426,7 @@ const Evaluate = class {
       }
 
       if (straight !== 0) {
+        str = [];
         for (let y = i; y < i + 5; y++) {
           pushStrNArr(y);
         }
@@ -336,53 +434,47 @@ const Evaluate = class {
     });
 
     // log if conidtions for straight is found
-
-    // condition for royal flush
-    if (straight === 2 && flush === true) {
-      this.result.bestHand = 0;
-      console.log(`${this.player} has ROYAALLLL FLUSHHHHH${[...str]}`);
-      return;
-    }
-
-    // condition for straight flush
-    if (straight === 1 && flush === true) {
-      this.result.bestHand = 1;
-      console.log(`${this.player} has STRAIGHT FLUSHHHHHHH${[...str]}`);
-      return;
-    }
-
     // condition for straight
     if (straight === 1) {
+      // globalStraight = true;
       this.result.bestHand = 5;
+      if (str.length === 10) {
+        spliceErrors(0, 5);
+      }
+      if (str.length === 15) {
+        spliceErrors(0, 10);
+      }
+      if (str.length !== 5) {
+        console.error("Look into straights, more than 5 cards");
+      }
       console.log(`${this.player} has STRAIGHTS${[...str]}`);
       return;
     }
 
     // findPairs
-    this.arrRank.forEach(function (val, i, arr) {
-      if (val === arr[i + 1] && val !== arr[i + 2]) {
-        for (let n = i; n < i + 2; n++) {
-          pushStrNArr(n);
+    if (this.result.bestHand === 11) {
+      this.arrRank.forEach(function (val, i, arr) {
+        if (val === arr[i + 1] && val !== arr[i + 2]) {
+          pair = true;
+          for (let n = i; n < i + 2; n++) {
+            pushStrNArr(n);
+          }
+        } else {
+          return;
         }
-      } else {
-        return;
-      }
-    });
+      });
+    }
 
     // log if conidtions for different types of pairs are found
-    if (str.length === 4) {
+    if (pair === true && str.length === 4) {
       this.result.bestHand = 7;
       console.log(`${_player} has TWO PAIRS ${[...str]}!`);
       pairType = 2;
       return;
     }
-    if (str.length === 6) {
+    if (pair === true && str.length === 6) {
       // remove lowest two pairs
-      str.splice(0, 2);
-      resultIndexRank.splice(0, 2);
-      resultRank.splice(0, 2);
-      resultSuit.splice(0, 2);
-      ogIndex.splice(0, 2);
+      spliceErrors(0, 2);
 
       this.result.bestHand = 7;
       console.log(
@@ -391,12 +483,13 @@ const Evaluate = class {
       pairType = 2;
       return;
     }
-    if (str.length === 2) {
+    if (pair === true && str.length === 2) {
       this.result.bestHand = 8;
       console.log(`${_player} has PAIR ${[...str]}!`);
       pairType = 1;
       return;
     }
+
     if (str.length === 0) {
       this.result.bestHand = 9;
       const highestCard = `${this.arrRank[6]} of ${this.arrSuit[6]}`;
@@ -423,29 +516,32 @@ const Evaluate = class {
     // Number of cards to be placed is cardDiff and should be taken from the end of array (highest rank cards)
     // Don't mutate original evalPlayer.arr
 
-    // make shallow copy
-    const _arrRank = this.arrRank.slice();
-    const _arrSuit = this.arrSuit.slice();
-    const _arrIndexOfRank = this.arrIndexOfRank.slice();
+    if (cardDiff > 0) {
+      // make shallow copy
+      const _arrRank = this.arrRank.slice();
+      const _arrSuit = this.arrSuit.slice();
+      const _arrIndexOfRank = this.arrIndexOfRank.slice();
 
-    // splice out best hand cards from set of 7 cards player + dealer
-    for (let i = this.result.ogIndex.length - 1; i > -1; i--) {
-      let cutThisIndex = this.result.ogIndex[i];
-      const spliceArr = function (n) {
-        _arrRank.splice(n, 1);
-        _arrSuit.splice(n, 1);
-        _arrIndexOfRank.splice(n, 1);
-      };
+      // splice out best hand cards from set of 7 cards player + dealer
+      for (let i = this.result.ogIndex.length - 1; i > -1; i--) {
+        let cutThisIndex = this.result.ogIndex[i];
+        const spliceArr = function (n) {
+          _arrRank.splice(n, 1);
+          _arrSuit.splice(n, 1);
+          _arrIndexOfRank.splice(n, 1);
+        };
 
-      spliceArr(cutThisIndex);
-    }
+        spliceArr(cutThisIndex);
+      }
 
-    // get the highest ranking cards to make up the final five, push to finalFive object
-    const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
-    for (let i = _arrRank.length - 1; i > 1; i--) {
-      finalRank.push(_arrRank[i]);
-      finalSuit.push(_arrSuit[i]);
-      finalRankIdx.push(_arrIndexOfRank[i]);
+      // get the highest ranking cards to make up the final five, push to finalFive object
+
+      const { finalRank, finalSuit, finalRankIdx } = this.result.finalFive;
+      for (let i = _arrRank.length - 1; i > 1; i--) {
+        finalRank.push(_arrRank[i]);
+        finalSuit.push(_arrSuit[i]);
+        finalRankIdx.push(_arrIndexOfRank[i]);
+      }
     }
 
     // console.log(this.result.finalFive);
@@ -453,8 +549,9 @@ const Evaluate = class {
 };
 
 const StalePlayers = class {
-  constructor(player, stalemateArr, finalFive) {
+  constructor(player, playerInitIndex, stalemateArr, finalFive) {
     this.player = player;
+    this.playerInitIndex = playerInitIndex;
     this.stalemateArr = {
       staleRank: [],
       staleSuit: [],
@@ -563,7 +660,6 @@ const endGame = function () {
 
           // shorten variable to improve readability
           let playerRanks = evalPlayer[val].result.resultIndexRank;
-
           // get cards for each player to print to console
           getCards(val, str);
 
@@ -598,7 +694,7 @@ const endGame = function () {
           // if a duplicate is found that is not in the same initial index found include it in array
 
           stalemate = true;
-          globalStalemate = true;
+          // globalStalemate = true;
 
           playerIdxStaleArr.push(playerIndexWithDupe[i]);
         }
@@ -637,20 +733,20 @@ const endGame = function () {
         str.push(`${evalPlayer[playerIndex].player}`);
       }
     };
-
     getPlayer(playerIdxStaleArr);
     console.log(`There's a stalemate between ${[...str]}`);
-    addTextBox(`\nThere's a stalemate between ${[...str]}`);
+    addTextBox(`\n\nThere's a stalemate between ${[...str]}`);
 
     // initialize stalePlayers and port over all relevant data
     for (let i = 0; i < playerIdxStaleArr.length; i++) {
       stalePlayer[i] = new StalePlayers(
         evalPlayer[playerIdxStaleArr[i]].player,
+        evalPlayer[i].playerInitIndex,
         {},
         {}
       );
 
-      // console.log(stalePlayer[i]);
+      console.log(stalePlayer[i]);
     }
 
     // port over data
@@ -665,7 +761,7 @@ const endGame = function () {
         stalePlayer[i].stalemateArr;
 
       // assign
-      Object.assign(finalFive, stalePlayer[i].finalFive);
+      Object.assign(stalePlayer[i].finalFive, finalFive);
 
       // loop over each element in evalPlayer and push into stalePlayer
       resultRank.forEach(function (val, x) {
@@ -676,8 +772,22 @@ const endGame = function () {
       console.log(stalePlayer[i]);
     });
 
-    // have methods in stalePlayer class and execute it here
+    for (let i = 0; i < stalePlayer.length; i++) {
+      str = [];
+      const { finalRank, finalSuit, finalRankIdx } = stalePlayer[i].finalFive;
 
+      for (let n = 0; n < finalRank.length; n++) {
+        str.push(`${finalRank[n]} of ${finalSuit[n]}`);
+      }
+      console.log(
+        `${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
+      );
+      addTextBox(
+        `\n${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
+      );
+    }
+    // redundant code UNFORTUNATELY YOU SPEND 2 DAYS ON THIS //
+    /* 
     let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
 
     // get their hands and compare if they are identical,
@@ -703,8 +813,6 @@ const endGame = function () {
 
         temp = [];
       };
-
-      console.log(`Card ${i}`);
 
       // for each player, staleRank
       for (let n = 0; n < stalePlayer.length; n++) {
@@ -732,49 +840,199 @@ const endGame = function () {
     }
 
     console.log(compare);
-
-    // if it is then compare finalFive, get winner if there's a highest card
-    // if final five is the same, then play the board, split the pot
-
-    // check if cards are from community cards e.g. dealer
-    // compare resultRank and resultSuit to dealer.hands
-
-    // const { staleRank, staleSuit, staleRankIdx } = stalemateArr;
-
-    // evalPlayer[playerIdxStaleArr].result.resultIndexRank.forEach((val) =>
-    //   staleRankIdx.push(val)
-    // );
-    // evalPlayer[playerIdxStaleArr].result.resultRank.forEach((val) =>
-    //   staleRank.push(val)
-    // );
-    // evalPlayer[playerIdxStaleArr].result.resultSuit.forEach((val) =>
-    //   staleSuit.push(val)
-    // );
-    // for (let i = 0; i < staleRank.length; i++) {
-    //   const _staleRank = staleRank[i];
-    //   const _staleSuit = staleSuit[i];
-    //   const _staleRankIdx = staleRankIdx[i];
-    //   for (let n = 0; n < dealer.hand.length; n++) {
-    //     const {
-    //       rank: dealerRank,
-    //       suit: dealerSuit,
-    //       indexOfRank: dealerIdxRank,
-    //     } = dealer.hand[n];
-
-    //     if (
-    //       _staleRank === dealerRank &&
-    //       _staleSuit === dealerSuit &&
-    //       _staleRankIdx === dealerIdxRank
-    //     )
-    //       counter++;
-    //   }
-    // }
-
-    // if (counter === staleRank.length)
-    //   console.log("Playing the board, split the pot");
+    */
   };
 
-  if (stalemate === true) dealingStalemate();
+  const breakStalemate = function () {
+    let compareRankIdx = [];
+
+    //   let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
+
+    //   // get their hands and compare if they are identical,
+    //   const cardDisputeLength = stalePlayer[0].finalFive.finalRank.length;
+
+    //   // loop through each card
+    //   for (let i = 0; i < cardDisputeLength; i++) {
+    //     let _tempRank = [];
+    //     let _tempSuit = [];
+    //     let _tempRankIdx = [];
+
+    //     // two part function package it in temp array in loop, then push to compare after loop
+    //     const packIntoArr = function (data, temp) {
+    //       // pack in temp
+    //       temp.push(data[i]);
+    //     };
+
+    //     const pushIntoArr = function (destinationArr, temp) {
+    //       // push to destination
+    //       destinationArr.push(temp);
+
+    //       temp = [];
+    //     };
+
+    //     // for each player, staleRank
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalRank } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalRank, _tempRank);
+    //     }
+    //     pushIntoArr(compare.cardRank, _tempRank);
+
+    //     // for each player, staleSuit
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalSuit } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalSuit, _tempSuit);
+    //     }
+    //     pushIntoArr(compare.cardSuit, _tempSuit);
+
+    //     // for each player, staleRankIdx
+    //     for (let n = 0; n < stalePlayer.length; n++) {
+    //       const { finalRankIdx } = stalePlayer[n].finalFive;
+
+    //       packIntoArr(finalRankIdx, _tempRankIdx);
+    //     }
+    //     pushIntoArr(compare.cardRankInx, _tempRankIdx);
+    //   }
+
+    //   console.log(compare);
+
+    //   const cardsInComparison = compare.cardRankInx[0].length;
+    //   // const compareSet = Set(compare.cardRankInx).length;
+
+    //   console.log(compare.cardRankInx);
+    //   console.log(cardsInComparison);
+
+    // console.log(cardsInComparison - compareSet);
+
+    // use the first player as template
+    const { finalRank, finalSuit, finalRankIdx } = stalePlayer[0].finalFive;
+    let kickerTie;
+
+    for (let i = 0; i < finalRankIdx.length; i++) {
+      kickerTie = false;
+      compareRankIdx = [];
+      console.log(`Kicker ${i + 1}`);
+
+      compareRankIdx.push(finalRankIdx[i]);
+
+      // place kicker of other players (other than player 1) in array
+      for (let n = 1; n < stalePlayer.length; n++) {
+        let {
+          finalRank: compareFinalRank,
+          finalSuit: compareFinalSuit,
+          finalRankIdx: comparefinalRankIdx,
+        } = stalePlayer[n].finalFive;
+
+        compareRankIdx.push(comparefinalRankIdx[i]);
+
+        /*
+        // let tempWinner = 0;
+
+        // if (val > comparefinalRankIdx[i]) {
+        //   console.log(
+        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
+        //       i + 1
+        //     } and has the higher card ${val} ${finalRank[i]} of ${finalSuit[i]}`
+        //   );
+        //   return;
+        // } else if (val < comparefinalRankIdx[i]) {
+        //   tempWinner = n;
+        //   console.log(
+        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
+        //       i + 1
+        //     } and has the higher card ${comparefinalRankIdx[i]} ${
+        //       compareFinalRank[i]
+        //     } of ${compareFinalSuit[i]}`
+        //   );
+        //   return;
+        // }*/
+      }
+
+      console.log(compareRankIdx);
+      const maxValKicker = Math.max(...compareRankIdx);
+      const idxMaxValKicker = compareRankIdx.indexOf(maxValKicker);
+      console.log(`The maximum value in kicker ${i + 1} is ${maxValKicker}`);
+
+      for (let x = 0; x < compareRankIdx.length; x++) {
+        // find if there are other values equal to max value in array that is not the same index no as max value
+        if (compareRankIdx[x] === maxValKicker && x !== idxMaxValKicker) {
+          kickerTie = true;
+          console.log(
+            "There is a duplicate, please look into the next set of kicker to break the tie"
+          );
+        }
+      }
+      if (kickerTie === true) {
+        console.log(
+          "Finding other players that have lower rank kicker than max "
+        );
+
+        for (let y = compareRankIdx.length; y > -1; y--) {
+          if (compareRankIdx[y] < maxValKicker) {
+            console.log(
+              `${stalePlayer[y].player} has low kicker, delete player from StalePlayer`
+            );
+            stalePlayer.splice(y, 1);
+            console.log(stalePlayer);
+          }
+        }
+      }
+      if (kickerTie === false) {
+        console.log(`${stalePlayer[idxMaxValKicker].player} wins! `);
+        addTextBox(
+          `\n\n${
+            stalePlayer[idxMaxValKicker].player
+          } has the highest in Kicker No.${i + 1}! ${
+            stalePlayer[idxMaxValKicker].player
+          } wins!`
+        );
+        break;
+      }
+    }
+
+    if (
+      (stalePlayer.length > 1 && kickerTie === true) ||
+      finalRankIdx.length === 0
+    ) {
+      str = [];
+      for (let i = 0; i < stalePlayer.length; i++) {
+        str.push(`${stalePlayer[i].player}`);
+      }
+      console.log(`${[...str]} split the pot!`);
+      addTextBox(`\n\n${[...str]} split the pot!`);
+    }
+
+    // let playTheBoard = false;
+    // console.log(playTheBoard);
+
+    // stalePlayer.forEach(function (val, i, arr) {
+    //   let { staleSuit } = arr[i].stalemateArr;
+    //   console.log(staleSuit);
+    //   staleSuit.forEach(function (suit, n) {
+    //     if (suit === staleSuit[n + 1]) {
+    //       console.log(suit);
+    //       console.log(staleSuit[n + 1]);
+    //       playTheBoard = true;
+    //     }
+    //     if (suit !== staleSuit[n + 1]) {
+    //       playTheBoard = false;
+    //       return;
+    //     }
+    //   });
+    // });
+
+    // if (playTheBoard === false) {
+    //   console.log("find the other high cards");
+    // } else if (playTheBoard === true) {
+    //   console.log("split the pot");
+    // }
+  };
+
+  if (stalemate === true) {
+    dealingStalemate();
+    breakStalemate();
+  }
 };
 
 // Initialize dealer class
@@ -879,7 +1137,7 @@ const evaluateCards = function () {
 
   // create new object and concat with dealer's hand
   for (let i = 0; i < players.length; i++) {
-    evalPlayer[i] = new Evaluate(players[i].playerNo, [], [], [], {});
+    evalPlayer[i] = new Evaluate(players[i].playerNo, i, [], [], [], {});
   }
 
   // push hands into evalPlayer.cards
@@ -1026,7 +1284,6 @@ btnEval.addEventListener("click", function () {
 btnReset.addEventListener("click", function () {
   resetGame();
 
-  globalStalemate = false;
   console.log("Game reset, please initialize game to play!");
   textbox.value = "Reset! Press Initialize game to start!";
 });
@@ -1083,9 +1340,11 @@ btnTurbo.addEventListener("click", function () {
   };
   let gameCounter = 0;
 
-  while (globalStalemate === false) {
+  while (globalFlush === false) {
+    resetGame();
     gameCounter++;
-    console.log(gameCounter);
+    console.log(`Game No.${gameCounter}`);
+    addTextBox(`\n\nGame No.${gameCounter}`);
     turboGame();
   }
 });
