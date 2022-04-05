@@ -70,27 +70,6 @@ const handRanking = [
   "High Card",
 ];
 
-// Diamonds, Spade, Hearts, Clubs
-// Ace, 1-to-10, J, Q, K
-
-// Hard code or generate cards? 52 cards
-// For of loop
-
-/*
-// pseudocode for game state (can be an array), when game progresses gameState i++
-// gameState = 'initGame'
-// gameState = 'setPlayers'
-// gameState = 'r1Deal'
-// gameState = 'bet1'
-// gameState = 'flop'
-// gameState = 'r2Deal'
-// gameState = 'turn'
-// gameState = 'bet2'
-// gameState = 'river'
-// gameState = 'bet3'
-// gameState = 'winner'
-*/
-
 console.log(gameStateArr);
 
 function addTextBox(text) {
@@ -319,13 +298,6 @@ const Evaluate = class {
 
     // find flush
 
-    // for (let i = 0; i < players.length; i++) {
-    //   evalPlayer[i].cards.sort(function (a, b) {
-    //     return a.this.arrSuit - b.indexOfRank;
-    //   });
-    // }
-    // clearPushStrNArr();
-
     let flushIdx = [];
     str = [];
 
@@ -355,15 +327,6 @@ const Evaluate = class {
           pushStrNArr(val);
         });
       }
-
-      // if (flushIdx.length === 6 || flushIdx.length === 7) {
-      //   flush = true;
-      //   // globalFlush = true;
-
-      //   flushIdx.forEach((val) => {
-      //     pushStrNArr(val);
-      //   });
-      // }
     }
     // log if conidtions for flush is found
     if (flush === true) {
@@ -506,15 +469,6 @@ const Evaluate = class {
 
   finalFive() {
     const cardDiff = 5 - this.result.resultRank.length;
-    // console.log(
-    //   `There's ${cardDiff} more cards required to make up the final 5 for ${this.player}`
-    // );
-
-    // What needs to be done
-    // Get index of best cards from original sorted hand in players.hand
-    // Delete those cards in players.hand and place in new array of evalPlayer
-    // Number of cards to be placed is cardDiff and should be taken from the end of array (highest rank cards)
-    // Don't mutate original evalPlayer.arr
 
     if (cardDiff > 0) {
       // make shallow copy
@@ -584,9 +538,7 @@ const endGame = function () {
     console.log(
       `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
     );
-    addTextBox(
-      `\n${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
-    );
+    addTextBox(`\n${evalPlayer[i].player} has ${handRanking[score]}`);
   }
 
   // print playerScore arr
@@ -599,9 +551,7 @@ const endGame = function () {
 
     // index of lowest score
     playerIndexWithDupe.push(playerScore.indexOf(lowestPlayerScore));
-    console.log(
-      `The lowest rank is at index ${playerIndexWithDupe[0]} of playerScore arr`
-    );
+    console.log(`The lowest rank is at index ${playerIndexWithDupe[0]}`);
 
     // determine if there are any duplicates
     playerScore.filter(function (val, i, arr) {
@@ -685,6 +635,7 @@ const endGame = function () {
       // what is the index No of the largest value in that array
       maxValueIndex = sumCardsArr.indexOf(maxValue);
 
+      // place player index into an array, if there are other players with the same hand/value, include it here and initialize Stalemate player class in the following function dealingStalemate()
       playerIdxStaleArr = [playerIndexWithDupe[maxValueIndex]];
 
       // find stalemate players
@@ -786,129 +737,19 @@ const endGame = function () {
         `\n${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
       );
     }
-    // redundant code UNFORTUNATELY YOU SPEND 2 DAYS ON THIS //
-    /* 
-    let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
-
-    // get their hands and compare if they are identical,
-    const cardDisputeLength = stalePlayer[0].stalemateArr.staleRank.length;
-
-    // loop through each card
-
-    for (let i = 0; i < cardDisputeLength; i++) {
-      let _tempRank = [];
-      let _tempSuit = [];
-      let _tempRankIdx = [];
-
-      // package it in temp array, then push to compare
-
-      const packIntoArr = function (data, temp) {
-        // pack in temp
-        temp.push(data[i]);
-      };
-
-      const pushIntoArr = function (destinationArr, temp) {
-        // push to destination
-        destinationArr.push(temp);
-
-        temp = [];
-      };
-
-      // for each player, staleRank
-      for (let n = 0; n < stalePlayer.length; n++) {
-        const { staleRank } = stalePlayer[n].stalemateArr;
-
-        packIntoArr(staleRank, _tempRank);
-      }
-      pushIntoArr(compare.cardRank, _tempRank);
-
-      // for each player, staleSuit
-      for (let n = 0; n < stalePlayer.length; n++) {
-        const { staleSuit } = stalePlayer[n].stalemateArr;
-
-        packIntoArr(staleSuit, _tempSuit);
-      }
-      pushIntoArr(compare.cardSuit, _tempSuit);
-
-      // for each player, staleRankIdx
-      for (let n = 0; n < stalePlayer.length; n++) {
-        const { staleRankIdx } = stalePlayer[n].stalemateArr;
-
-        packIntoArr(staleRankIdx, _tempRankIdx);
-      }
-      pushIntoArr(compare.cardRankInx, _tempRankIdx);
-    }
-
-    console.log(compare);
-    */
   };
 
   const breakStalemate = function () {
     let compareRankIdx = [];
 
-    //   let compare = { cardRank: [], cardSuit: [], cardRankInx: [] };
-
-    //   // get their hands and compare if they are identical,
-    //   const cardDisputeLength = stalePlayer[0].finalFive.finalRank.length;
-
-    //   // loop through each card
-    //   for (let i = 0; i < cardDisputeLength; i++) {
-    //     let _tempRank = [];
-    //     let _tempSuit = [];
-    //     let _tempRankIdx = [];
-
-    //     // two part function package it in temp array in loop, then push to compare after loop
-    //     const packIntoArr = function (data, temp) {
-    //       // pack in temp
-    //       temp.push(data[i]);
-    //     };
-
-    //     const pushIntoArr = function (destinationArr, temp) {
-    //       // push to destination
-    //       destinationArr.push(temp);
-
-    //       temp = [];
-    //     };
-
-    //     // for each player, staleRank
-    //     for (let n = 0; n < stalePlayer.length; n++) {
-    //       const { finalRank } = stalePlayer[n].finalFive;
-
-    //       packIntoArr(finalRank, _tempRank);
-    //     }
-    //     pushIntoArr(compare.cardRank, _tempRank);
-
-    //     // for each player, staleSuit
-    //     for (let n = 0; n < stalePlayer.length; n++) {
-    //       const { finalSuit } = stalePlayer[n].finalFive;
-
-    //       packIntoArr(finalSuit, _tempSuit);
-    //     }
-    //     pushIntoArr(compare.cardSuit, _tempSuit);
-
-    //     // for each player, staleRankIdx
-    //     for (let n = 0; n < stalePlayer.length; n++) {
-    //       const { finalRankIdx } = stalePlayer[n].finalFive;
-
-    //       packIntoArr(finalRankIdx, _tempRankIdx);
-    //     }
-    //     pushIntoArr(compare.cardRankInx, _tempRankIdx);
-    //   }
-
-    //   console.log(compare);
-
-    //   const cardsInComparison = compare.cardRankInx[0].length;
-    //   // const compareSet = Set(compare.cardRankInx).length;
-
-    //   console.log(compare.cardRankInx);
-    //   console.log(cardsInComparison);
-
-    // console.log(cardsInComparison - compareSet);
-
     // use the first player as template
     const { finalRank, finalSuit, finalRankIdx } = stalePlayer[0].finalFive;
     let kickerTie;
 
+    // compiles kicker cards of players in stalemate into an array compareRankIdx
+    // finds max, the index of max and determines if there are other kickers of the same rank
+    // if there is, delete/splice all players with kicker lower than max and go through the next kicker
+    // if there is no other equally high rank kicker, player wins
     for (let i = 0; i < finalRankIdx.length; i++) {
       kickerTie = false;
       compareRankIdx = [];
@@ -925,28 +766,6 @@ const endGame = function () {
         } = stalePlayer[n].finalFive;
 
         compareRankIdx.push(comparefinalRankIdx[i]);
-
-        /*
-        // let tempWinner = 0;
-
-        // if (val > comparefinalRankIdx[i]) {
-        //   console.log(
-        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
-        //       i + 1
-        //     } and has the higher card ${val} ${finalRank[i]} of ${finalSuit[i]}`
-        //   );
-        //   return;
-        // } else if (val < comparefinalRankIdx[i]) {
-        //   tempWinner = n;
-        //   console.log(
-        //     `${stalePlayer[tempWinner].player} wins with kicker number ${
-        //       i + 1
-        //     } and has the higher card ${comparefinalRankIdx[i]} ${
-        //       compareFinalRank[i]
-        //     } of ${compareFinalSuit[i]}`
-        //   );
-        //   return;
-        // }*/
       }
 
       console.log(compareRankIdx);
@@ -1002,31 +821,6 @@ const endGame = function () {
       console.log(`${[...str]} split the pot!`);
       addTextBox(`\n\n${[...str]} split the pot!`);
     }
-
-    // let playTheBoard = false;
-    // console.log(playTheBoard);
-
-    // stalePlayer.forEach(function (val, i, arr) {
-    //   let { staleSuit } = arr[i].stalemateArr;
-    //   console.log(staleSuit);
-    //   staleSuit.forEach(function (suit, n) {
-    //     if (suit === staleSuit[n + 1]) {
-    //       console.log(suit);
-    //       console.log(staleSuit[n + 1]);
-    //       playTheBoard = true;
-    //     }
-    //     if (suit !== staleSuit[n + 1]) {
-    //       playTheBoard = false;
-    //       return;
-    //     }
-    //   });
-    // });
-
-    // if (playTheBoard === false) {
-    //   console.log("find the other high cards");
-    // } else if (playTheBoard === true) {
-    //   console.log("split the pot");
-    // }
   };
 
   if (stalemate === true) {
