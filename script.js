@@ -10,7 +10,7 @@ const btnFlop = document.querySelector(".btn-flop");
 const btnTurn = document.querySelector(".btn-turn");
 const btnRiver = document.querySelector(".btn-river");
 const btnEval = document.querySelector(".btn-eval");
-const btnReset = document.querySelector(".btn-reset");
+const btnReset = document.querySelectorAll(".btn-reset");
 const btnTurbo = document.querySelector(".btn-turbo");
 
 let textbox = document.querySelector(".textarea");
@@ -1175,12 +1175,14 @@ btnEval.addEventListener("click", function () {
   }
 });
 
-btnReset.addEventListener("click", function () {
-  resetGame();
+btnReset.forEach((ele) =>
+  ele.addEventListener("click", () => {
+    resetGame();
 
-  console.log("Game reset, please initialize game to play!");
-  textbox.value = "Reset! Press Initialize game to start!";
-});
+    console.log("Game reset, please initialize game to play!");
+    textbox.value = "Reset! Press Initialize game to start!";
+  })
+);
 
 btnTurbo.addEventListener("click", function () {
   const turboGame = function () {
