@@ -74,8 +74,20 @@ const handRanking = [
 
 console.log(gameStateArr);
 
-function addTextBox(text) {
-  textbox.value += text;
+function addTextBox(text, numLine) {
+  let newLineArr = [];
+  let newLineStr = "";
+  for (let i = 0; i < numLine; i++) {
+    newLineArr.push("\n");
+  }
+
+  newLineArr.forEach((val) => (newLineStr += val));
+
+  textbox.value += newLineStr + text;
+
+  const textboxHeight = textbox.scrollHeight;
+  console.log(textboxHeight);
+  textbox.scrollTop = textbox.scrollHeight;
 }
 
 addTextBox("welcome!");
@@ -146,7 +158,7 @@ const PlayerCl = class {
     }
 
     console.log(`${this.playerNo} has ${playerHandArr}`);
-    addTextBox(`\n${this.playerNo} has${playerHandArr}`);
+    addTextBox(`${this.playerNo} has${playerHandArr}`, 1);
     return playerHandArr;
   }
 };
@@ -545,7 +557,7 @@ const endGame = function () {
     console.log(
       `${evalPlayer[i].player} has ${handRanking[score]} and ranking of ${score}`
     );
-    addTextBox(`\n${evalPlayer[i].player} has ${handRanking[score]}`);
+    addTextBox(`${evalPlayer[i].player} has ${handRanking[score]}`, 1);
   }
 
   // print playerScore arr
@@ -594,7 +606,7 @@ const endGame = function () {
         } with ${[...winnerCards]}`
       );
       console.log(...str);
-      addTextBox(`\n\n${[...str]}`);
+      addTextBox(`${[...str]}`, 2);
     }
 
     // what hands are duplicates, new variable to improve readability
@@ -614,7 +626,7 @@ const endGame = function () {
         str.push(`${evalPlayer[val].player}`);
       });
       console.log(`${[...str]} have are tied with ${typeOfDupe}`);
-      addTextBox(`\n\n${[...str]} are tied with ${typeOfDupe}`);
+      addTextBox(`${[...str]} are tied with ${typeOfDupe}`, 2);
 
       // add up players cards and push to an array
       function sumCards() {
@@ -640,7 +652,7 @@ const endGame = function () {
 
             // print to console
             console.log(`${evalPlayer[playerIdx].player} with ${[...str]}`);
-            addTextBox(`\n${evalPlayer[playerIdx].player} with ${[...str]}`);
+            addTextBox(`${evalPlayer[playerIdx].player} with ${[...str]}`, 1);
           };
 
           if (firstRun === true) {
@@ -769,7 +781,7 @@ const endGame = function () {
             } with ${[...winnerCards]}`
           );
           console.log(...str);
-          addTextBox(`\n\n${[...str]}`);
+          addTextBox(`${[...str]}`, 2);
         }
       }
     }
@@ -791,7 +803,7 @@ const endGame = function () {
     console.error(playerIdxStaleArr);
     getPlayer(playerIdxStaleArr);
     console.log(`There's a stalemate between ${[...str]}`);
-    addTextBox(`\n\nThere's a stalemate between ${[...str]}`);
+    addTextBox(`There's a stalemate between ${[...str]}`, 2);
 
     // initialize stalePlayers and port over all relevant data
     for (let i = 0; i < playerIdxStaleArr.length; i++) {
@@ -839,7 +851,8 @@ const endGame = function () {
         `${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
       );
       addTextBox(
-        `\n${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`
+        `${stalePlayer[i].player} has ${finalRank.length} kickers ${[...str]}`,
+        1
       );
     }
   };
@@ -905,11 +918,12 @@ const endGame = function () {
       if (kickerTie === false) {
         console.log(`${stalePlayer[idxMaxValKicker].player} wins! `);
         addTextBox(
-          `\n\n${
+          `${
             stalePlayer[idxMaxValKicker].player
           } has the highest in Kicker No.${i + 1}! ${
             stalePlayer[idxMaxValKicker].player
-          } wins!`
+          } wins!`,
+          2
         );
         break;
       }
@@ -924,7 +938,7 @@ const endGame = function () {
         str.push(`${stalePlayer[i].player}`);
       }
       console.log(`${[...str]} split the pot!`);
-      addTextBox(`\n\n${[...str]} split the pot!`);
+      addTextBox(`${[...str]} split the pot!`, 2);
     }
   };
 
@@ -953,7 +967,7 @@ const initDealer = function () {
         dealerHandStrArr.push(` ${dealerRank} of ${dealerSuit}`);
       }
       console.log(`Dealer has${dealerHandStrArr}`);
-      addTextBox(`\nDealer has${dealerHandStrArr}`);
+      addTextBox(`Dealer has${dealerHandStrArr}`, 1);
     }
   })();
 };
@@ -965,7 +979,7 @@ const initPlayers = function (nPlayers) {
     players[i] = new PlayerCl(`Player ${i + 1}`);
   }
 
-  addTextBox(`\n${nPlayers} players initialized`);
+  addTextBox(`${nPlayers} players initialized`, 1);
 };
 
 // Deal cards to players
@@ -1003,7 +1017,7 @@ const dealerRiver = function () {
 // To initialize game, generate deck and shuffle
 const initGame = function () {
   if (gameState === gameStateArr[0]) {
-    addTextBox("\nInitializing game");
+    addTextBox("Initializing game", 1);
     generateDeck(suit, rank);
 
     fisYatesShuff();
@@ -1017,7 +1031,9 @@ const initGame = function () {
       addTextBox(".");
 
       if (counter < 1) {
-        addTextBox("\nDone, lets play!\nSelect number of players");
+        addTextBox("Done, lets play!", 1);
+        addTextBox("Select number of players", 1);
+
         clearInterval(countdown);
       }
     }, 1000);
@@ -1193,13 +1209,14 @@ btnTurbo.addEventListener("click", function () {
   const turboGame = function () {
     activePlayers = 4;
 
-    addTextBox("\nInitializing game");
+    addTextBox("Initializing game", 1);
     generateDeck(suit, rank);
 
     fisYatesShuff();
     console.log("Shuffling deck...");
 
-    addTextBox("\nDone, lets play!\nSelect number of players");
+    addTextBox("Done, lets play!", 1);
+    addTextBox("Select number of players", 1);
 
     console.log(deck);
 
@@ -1245,7 +1262,7 @@ btnTurbo.addEventListener("click", function () {
     resetGame();
     gameCounter++;
     console.log(`Game No.${gameCounter}`);
-    addTextBox(`\n\nGame No.${gameCounter}`);
+    addTextBox(`Game No.${gameCounter}`, 2);
     turboGame();
   }
 });
