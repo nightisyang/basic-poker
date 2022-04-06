@@ -282,8 +282,13 @@ const Evaluate = class {
     }
 
     // log if conidtions for straight is found - logic for 3 of a kind overlaps, if str.length = 3
-    if (threeOfAKind === true && str.length === 3) {
+    if (threeOfAKind === true) {
       this.result.bestHand = 6;
+
+      if (str.length === 6) {
+        spliceErrors(0, 3);
+      }
+
       console.log(`${this.player} has THREE OF A KIND ${[...str]}!`);
       return;
     }
