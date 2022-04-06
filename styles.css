@@ -22,6 +22,7 @@ h2 {
   resize: none;
   width: 560px;
   height: 350px;
+  overflow: scroll;
 }
 
 h4 {
