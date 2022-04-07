@@ -12,7 +12,7 @@ const btnRiver = document.querySelector(".btn-river");
 const btnEval = document.querySelector(".btn-eval");
 const btnReset = document.querySelectorAll(".btn-reset");
 const btnTurbo = document.querySelector(".btn-turbo");
-const btnPlyr = document.querySelectorAll(".btn-plyr");
+let btnPlyr;
 // const btnPlyr2 = document.querySelector(".btn-plyr2");
 // const btnPlyr3 = document.querySelector(".btn-plyr3");
 // const btnPlyr4 = document.querySelector(".btn-plyr4");
@@ -152,9 +152,10 @@ const PlayerCl = class {
   constructor(playerNo, hand, chips) {
     this.playerNo = playerNo;
     this.hand = [];
-    this.chips = { startBal: 1000, movement: [] };
+    this.chips = { startBal: 1000, currBal: 1000, movement: [] };
   }
 
+  // ********* METHODS **********
   showHand() {
     let playerHandArr = [];
 
@@ -167,7 +168,76 @@ const PlayerCl = class {
     addTextBox(`${this.playerNo} has${playerHandArr}`, 1);
     return playerHandArr;
   }
+
+  bets() {
+    // check if value in prompt is valid/true
+    // prompt to take in a value
+    const betAmount = Number(prompt(`${this.playerNo} place your bets!`));
+
+    // value must be integer and more than 0
+    if (Number.isInteger(betAmount) && betAmount > 0) {
+      // print to console amount bet
+      console.log(`${this.playerNo} has placed ${betAmount}`);
+
+      // only approve if bet amount is less than current balance
+      if (betAmount < this.chips.currBal) {
+        // if conditions are true, then push bet to movement array
+        this.chips.movement.push(betAmount);
+
+        // deduct current balance
+        this.chips.currBal -= betAmount;
+
+        // print to console current balance
+        console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
+
+        // if player bets more than balance
+      } else if (betAmount > this.chips.currBal) {
+        // alert
+        alert("Insufficient balance!");
+
+        // and rerun function
+        this.bets();
+      }
+    } else {
+      // if player include value that is not integer or negative value
+      alert("Please enter whole values more than zero!");
+
+      // rerun function
+      this.bets();
+    }
+  }
 };
+
+// document.body.onload = addElement;
+
+function addElement() {
+  // create a new div element
+  const newBtn = document.createElement("button");
+  newBtn.innerHTML = "Player Placeholder";
+  newBtn.className = "btn-plyr";
+  document.body.appendChild(newBtn);
+
+  // and give it some content
+  // const newContent = document.createTextNode("Hi there and greetings!");
+  // const newButton = document.c
+
+  // add the text node to the newly created div
+  // newDiv.appendChild(newContent);
+
+  // add the newly created element and its content into the DOM
+  const currentDiv = document.getElementById("placeholder");
+  // document.body.insertBefore(newBtn, currentDiv);
+
+  currentDiv.append(newBtn);
+  btnPlyr = document.querySelectorAll(".btn-plyr");
+
+  btnPlyr.forEach((ele, i) =>
+    ele.addEventListener("click", function () {
+      console.log(i);
+      players[i].bets();
+    })
+  );
+}
 
 // Evaluate Class prototype
 const Evaluate = class {
@@ -1360,15 +1430,3 @@ btnTurbo.addEventListener("click", function () {
   turboGame();
   // resetGame();
 });
-
-btnPlyr.forEach((ele) => ele.addEventListener("click", bets));
-
-function bets() {
-  const betAmount = Number(prompt("Place your bets!"));
-  console.log(betAmount);
-  let { startBal, movement } = players[0].chips;
-  movement.push(betAmount);
-  console.log(startBal);
-  startBal -= betAmount;
-  console.log(startBal);
-}
