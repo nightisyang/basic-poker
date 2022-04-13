@@ -252,6 +252,9 @@ const PlayerCl = class {
       // deduct current balance
       this.chips.currBal -= bigBlindAmount;
 
+      // set betRound to false
+      this.betRound = false;
+
       // print to console current balance
       console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
       addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 1);
@@ -274,6 +277,15 @@ const PlayerCl = class {
       return;
     }
 
+    if (this.currBet !== dealer.minCall) {
+      console.log(players[dealer.smallBlindPlyr].playerNo, this.playerNo);
+      // if this is the small blind player, let player raise instead of bet
+      if (players[dealer.smallBlindPlyr].playerNo === this.playerNo) {
+        this.raise();
+        return;
+      }
+    }
+
     if (this.active === true && this.startTurn === true) {
       // check if value in prompt is valid/true
       // prompt to take in a value
@@ -289,6 +301,7 @@ const PlayerCl = class {
       // change type to number
       betAmount = Number(betAmount);
 
+      // check
       if (dealer.minCall === 0 && betAmount === 0) {
         console.log(`${this.playerNo} has checked`);
         addTextBox(`${this.playerNo} has checked`);
@@ -361,6 +374,7 @@ const PlayerCl = class {
 
         // move to next player
         this.startTurn = false;
+        this.betRound = false;
         dealer.startNextPlyrTurn();
 
         // if player bets more than balance
@@ -1451,7 +1465,10 @@ const initDealer = function () {
     constructor(
       hand,
       dealerButton,
+      smallBlindPlyr,
+      bigBlindPlyr,
       plyrTurn,
+      betCompleted,
       pot,
       potMov,
       smallBlind,
@@ -1460,11 +1477,14 @@ const initDealer = function () {
     ) {
       this.hand = [];
       this.dealerButton;
-      this.plyrTurn = this.plyrTurn;
+      this.smallBlindPlyr = smallBlindPlyr;
+      this.bigBlindPlyr = bigBlindPlyr;
+      this.plyrTurn = plyrTurn;
+      this.betCompleted = betCompleted;
       this.pot = 0;
       this.potMov = { amount: [], player: [] };
-      this.smallBlind;
-      this.bigBlind;
+      this.smallBlind = smallBlind;
+      this.bigBlind = bigBlind;
       this.minCall = 0;
     }
     // Method
@@ -1486,10 +1506,10 @@ const initDealer = function () {
     initButton() {
       this.dealerButton = players.length - 1;
 
-      this.smallBlind = this.dealerButton;
-      this.bigBlind = this.smallBlind - 1;
+      this.smallBlindPlyr = this.dealerButton;
+      this.bigBlindPlyr = this.smallBlindPlyr - 1;
 
-      this.plyrTurn = this.bigBlind - 1;
+      this.plyrTurn = this.bigBlindPlyr - 1;
       players[this.plyrTurn].startTurn = true;
     }
 
@@ -1540,6 +1560,21 @@ const initDealer = function () {
 
     setGameState(n) {
       gameState = gameStateArr[n];
+    }
+
+    betRoundComplete() {
+      for (let i = 0; i < players.length; i++) {
+        // if there are any players that have yet to bet
+        if (players[i].betRound === true) {
+          // immediately return
+          this.betCompleted = false;
+          return;
+
+          // or else, if all the players are done betting
+        } else {
+          this.betCompleted = true;
+        }
+      }
     }
 
     startNextPlyrTurn() {
@@ -1644,9 +1679,13 @@ const initDealer = function () {
 
       console.log(this.plyrTurn, dealerBtnMinusOneIdx);
 
-      if (this.plyrTurn === dealerBtnMinusOneIdx || loopOver === true) {
-        this.checkBets();
-        console.log("Dealer checking bets..");
+      this.betRoundComplete();
+
+      if (this.betCompleted === true) {
+        if (this.plyrTurn === dealerBtnMinusOneIdx || loopOver === true) {
+          this.checkBets();
+          console.log("Dealer checking bets..");
+        }
       }
     }
 
@@ -1710,7 +1749,12 @@ const initDealer = function () {
           // reset values for player's new betting round
           for (let i = 0; i < players.length; i++) {
             players[i].currBet = 0;
+
+            if (players[i].active === true) {
+              players[i].betRound = true;
+            }
           }
+          this.betCompleted = false;
         }
       } else if (activePlayers === 1) {
         players.forEach(function (val, i) {
@@ -2148,8 +2192,8 @@ btnTurbo.addEventListener("click", function () {
   function blinds() {
     if (gameState === gameStateArr[4]) {
       clearInterval(blindsItv);
-      players[dealer.smallBlind].smallBlind();
-      players[dealer.bigBlind].bigBlind();
+      players[dealer.smallBlindPlyr].smallBlind();
+      players[dealer.bigBlindPlyr].bigBlind();
 
       dealer.setGameState(5);
     }
@@ -2229,16 +2273,6 @@ btnTurbo.addEventListener("click", function () {
       clearInterval(bet4Itv);
 
       dealer.promptPlyrBet();
-
-      if (activePlayers > 1) {
-        evaluateCards();
-
-        evalPlayer.forEach((val, i) => evalPlayer[i].findAll());
-
-        evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
-
-        endGame();
-      }
 
       if (gameState === gameStateArr[12]) {
         console.log("return");
