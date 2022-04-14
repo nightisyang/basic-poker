@@ -223,6 +223,11 @@ const PlayerCl = class {
     }
   }
 
+  smallBlindCall() {
+    this.call();
+    this.plyrEndTurn();
+  }
+
   bigBlind() {
     let bigBlindAmount = prompt(`${this.playerNo} place big blind!`);
 
@@ -253,7 +258,7 @@ const PlayerCl = class {
       this.chips.currBal -= bigBlindAmount;
 
       // set betRound to false
-      this.betRound = false;
+      this.plyrCompleteBetRound();
 
       // print to console current balance
       console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
@@ -277,14 +282,14 @@ const PlayerCl = class {
       return;
     }
 
-    if (this.currBet !== dealer.minCall) {
-      console.log(players[dealer.smallBlindPlyr].playerNo, this.playerNo);
-      // if this is the small blind player, let player raise instead of bet
-      if (players[dealer.smallBlindPlyr].playerNo === this.playerNo) {
-        this.raise();
-        return;
-      }
-    }
+    // if (this.currBet !== dealer.minCall) {
+    //   console.log(players[dealer.smallBlindPlyr].playerNo, this.playerNo);
+    //   // if this is the small blind player, let player raise instead of bet
+    //   if (players[dealer.smallBlindPlyr].playerNo === this.playerNo) {
+    //     this.raise();
+    //     return;
+    //   }
+    // }
 
     if (this.active === true && this.startTurn === true) {
       // check if value in prompt is valid/true
@@ -303,19 +308,7 @@ const PlayerCl = class {
 
       // check
       if (dealer.minCall === 0 && betAmount === 0) {
-        console.log(`${this.playerNo} has checked`);
-        addTextBox(`${this.playerNo} has checked`);
-        const { amount, player } = dealer.potMov;
-        // dealer.pot += betAmount;
-        dealer.potMov.amount.push(betAmount);
-        dealer.potMov.player.push(this.playerNo);
-        this.chips.movement.push(0);
-        this.chips.movType.push("Check");
-
-        // move to next player
-        this.startTurn = false;
-        this.betRound = false;
-        dealer.startNextPlyrTurn();
+        this.check();
         return;
       }
 
@@ -372,10 +365,11 @@ const PlayerCl = class {
         // console.log(player);
         // console.log(dealer);
 
-        // move to next player
-        this.startTurn = false;
-        this.betRound = false;
-        dealer.startNextPlyrTurn();
+        // set betRound to false
+        this.plyrCompleteBetRound();
+
+        // end turn and ask dealer to start next player's turn
+        this.plyrEndTurn();
 
         // if player bets more than balance
       } else if (betAmount > this.chips.currBal) {
@@ -408,7 +402,7 @@ const PlayerCl = class {
     }
   }
 
-  raise() {
+  call() {
     if (this.active === true) {
       // check if value in prompt is valid/true
       // prompt to take in a value
@@ -477,10 +471,11 @@ const PlayerCl = class {
         // console.log(player);
         // console.log(dealer);
 
-        // move to next player
-        this.startTurn = false;
-        this.betRound = false;
-        dealer.startNextPlyrTurn();
+        // set betRound to false
+        this.plyrCompleteBetRound();
+
+        // end turn and ask dealer to start next player's turn
+        // this.plyrEndTurn();
 
         // if player bets more than balance
       } else if (raiseAmount > this.chips.currBal) {
@@ -488,7 +483,7 @@ const PlayerCl = class {
         alert("Insufficient balance!");
 
         // and rerun function
-        this.raise();
+        this.call();
       } else if (currAddRaise < dealer.minCall) {
         // alert
         alert(
@@ -498,7 +493,7 @@ const PlayerCl = class {
         );
 
         // and rerun function
-        this.raise();
+        this.call();
       } else if (
         currAddRaise < dealer.minCall &&
         raiseAmount < this.chips.currBal
@@ -509,13 +504,13 @@ const PlayerCl = class {
         );
 
         // and rerun function
-        this.raise();
+        this.call();
       } else {
         // if player include value that is not integer or negative value
         alert("Please enter whole values more than zero!");
 
         // rerun function
-        this.raise();
+        this.call();
       }
     }
   }
@@ -539,12 +534,40 @@ const PlayerCl = class {
       console.log(`${this.playerNo} has folded!`);
       addTextBox(`${this.playerNo} has folded!`, 1);
 
-      // remove all data from evaluation
-      // evalPlayer[i].resetFold();
-      this.startTurn = false;
-      this.betRound = false;
-      dealer.startNextPlyrTurn();
+      // set betRound to false
+      this.plyrCompleteBetRound();
+
+      // end turn and ask dealer to start next player's turn
+      this.plyrEndTurn();
     }
+  }
+
+  check() {
+    console.log(`${this.playerNo} has checked`);
+    addTextBox(`${this.playerNo} has checked`, 1);
+    const { amount, player } = dealer.potMov;
+    // dealer.pot += betAmount;
+    dealer.potMov.amount.push(0);
+    dealer.potMov.player.push(this.playerNo);
+    this.chips.movement.push(0);
+    this.chips.movType.push("Check");
+
+    // set betRound to false
+    this.plyrCompleteBetRound();
+
+    // end turn and ask dealer to start next player's turn
+    this.plyrEndTurn();
+  }
+
+  plyrEndTurn() {
+    // end turn and ask dealer to start next player's turn
+    this.startTurn = false;
+    dealer.startNextPlyrTurn();
+  }
+
+  plyrCompleteBetRound() {
+    this.betRound = false;
+    console.log(`${this.playerNo} bet round is completed`);
   }
 };
 
@@ -1546,8 +1569,33 @@ const initDealer = function () {
       }
     }
 
-    promptPlyrBet() {
-      const i = this.plyrTurn;
+    promptPlyrBet(n) {
+      // at the or start of turn, the first active player on the left of the dealer button starts the round
+      // ensure that player[i].startBet for this player is true, while others are false
+      // ensure that all active player's bet round is true
+
+      // players.forEach((val, i) => {
+      //   if (players[i].active === true) {
+      //     players[i].betRound = true;
+      //   }
+      // });
+      console.error("**** A NEW ROUND ****");
+
+      const i = n;
+
+      players.forEach((val, i) => {
+        players[i].startTurn = false;
+      });
+
+      players[i].startTurn = true;
+      this.plyrTurn = i;
+
+      if (players[i].active === false) {
+        console.error("**** PLAYER NOT ACTIVE. FINDING NEXT ACTIVE PLAYER ***");
+        players[i].startTurn = false;
+        this.startNextPlyrTurn();
+        return;
+      }
 
       console.log(
         `${players[i].playerNo} start the bet! Click on your button!`
@@ -1597,16 +1645,37 @@ const initDealer = function () {
 
       if (players[i].active === false) {
         this.startNextPlyrTurn();
-        // return;
+        return;
+      }
+
+      // dealer to check if betting round is compeleted i.e. everyone has place at least 1 bet
+      this.betRoundComplete();
+
+      // if all players have placed at least 1 bet in this round, check if all players meet dealer.minCall
+      if (this.betCompleted === true) {
+        // if (this.plyrTurn === dealerBtnMinusOneIdx || loopOver === true) {
+        console.log(
+          "Betting round is completed, dealer checking if players meet call.."
+        );
+        addTextBox(
+          "Betting round is completed, dealer checking if players meet call..",
+          2
+        );
+        this.checkBets();
+        return;
       }
 
       if (players[i].active === true) {
         players[i].startTurn = true;
-        console.log(`${players[i].playerNo} ${players[i].startTurn}`);
+        // console.log(`${players[i].playerNo} ${players[i].startTurn}`);
+        console.log(
+          `${players[i].playerNo} start the bet! Click on your button!`
+        );
+        addTextBox(
+          `${players[i].playerNo} start the bet! Click on your button!`,
+          1
+        );
       }
-
-      console.log(`It's ${players[i].playerNo}'s turn now.`);
-      addTextBox(`It's ${players[i].playerNo}'s turn now.`, 1);
 
       // if (players[i].currBet === this.minCall) {
       //   console.log(
@@ -1615,6 +1684,7 @@ const initDealer = function () {
       //   this.startNextPlyrTurn();
       // }
 
+      /*
       // if dealer button is with the first active player && curr player or this plyr turn is the last active player --> return true
       let loopOver;
       const startOfLine = activePlyrArr[0];
@@ -1676,17 +1746,9 @@ const initDealer = function () {
           }
         }
       }
+*/
 
-      console.log(this.plyrTurn, dealerBtnMinusOneIdx);
-
-      this.betRoundComplete();
-
-      if (this.betCompleted === true) {
-        if (this.plyrTurn === dealerBtnMinusOneIdx || loopOver === true) {
-          this.checkBets();
-          console.log("Dealer checking bets..");
-        }
-      }
+      // console.log(this.plyrTurn, dealerBtnMinusOneIdx);
     }
 
     checkBets() {
@@ -1695,26 +1757,44 @@ const initDealer = function () {
       // let loop be clockwise, starting with dealer's button
       // loop has to go through all elements in array
 
-      const extra = players.length - 1 - this.dealerButton;
-
-      for (let i = this.dealerButton; i > extra * -1 - 1; i--) {
-        console.log("Looping through players to check bets");
-
+      function checkLoop(i) {
+        let x = i;
         // only for players that are still in the game
-        if (players[i].active === true) {
+        if (players[x].active === true) {
           console.log("Getting active players");
 
           // find all other players that do not meet call
-          if (players[i].currBet < dealer.minCall) {
+          if (players[x].currBet < dealer.minCall) {
             // plyrBetLowerThanMinCall = true;
 
             alert(
-              `${players[i].playerNo}, meet raised amount or fold! Add ${
-                dealer.minCall - players[i].currBet
+              `${players[x].playerNo}, meet raised amount or fold! Add ${
+                dealer.minCall - players[x].currBet
               } to stay in the game!`
             );
-            players[i].raise();
-            console.log("Dealer resolved bets");
+
+            console.log(`Prompting ${players[x].playerNo} to call or fold...`);
+
+            players[x].call();
+          }
+          if (players[x].currBet === dealer.minCall) {
+            console.log(
+              `${players[x].playerNo} meets ${dealer.minCall}. Skipping..`
+            );
+          }
+        }
+      }
+
+      for (let i = this.dealerButton; i >= 0; i--) {
+        console.error("Looping through to start to check bets");
+
+        checkLoop(i);
+
+        if (i === 0) {
+          console.error("Looping through to dealer button to check bets");
+
+          for (let n = players.length - 1; n > this.dealerButton - 1; n--) {
+            checkLoop(n);
           }
         }
       }
@@ -1725,9 +1805,9 @@ const initDealer = function () {
         players.forEach(function (val, i) {
           if (players[i].active === true) {
             if (players[i].currBet === dealer.minCall) {
-              console.log(
-                `${players[i].playerNo} meets call bet ${players[i].currBet}`
-              );
+              // console.log(
+              //   `${players[i].playerNo} meets call bet ${players[i].currBet}`
+              // );
               checkCounter++;
             }
           }
@@ -1739,22 +1819,37 @@ const initDealer = function () {
           );
           this.checkBets();
         } else if (checkCounter === activePlayers) {
-          // advance game state
-          const gameStateIdx = gameStateArr.indexOf(gameState);
-          dealer.setGameState(gameStateIdx + 1);
+          console.error(
+            `All players meet call $${dealer.minCall}, starting next round..`
+          );
+
+          addTextBox(
+            `All players meet call $${dealer.minCall}, starting next round..`,
+            2
+          );
 
           // reset values for new betting round
           this.minCall = 0;
 
           // reset values for player's new betting round
           for (let i = 0; i < players.length; i++) {
-            players[i].currBet = 0;
-
             if (players[i].active === true) {
               players[i].betRound = true;
             }
+
+            players[i].currBet = 0;
           }
+
+          // new betting round, set to incomplete, betCompleted false
+          console.error("****NEW BET ROUND RESETING...****");
           this.betCompleted = false;
+
+          // if
+
+          // advance game state
+          console.error("****ADVANCING GAME STATE****");
+          const gameStateIdx = gameStateArr.indexOf(gameState);
+          dealer.setGameState(gameStateIdx + 1);
         }
       } else if (activePlayers === 1) {
         players.forEach(function (val, i) {
@@ -1768,19 +1863,19 @@ const initDealer = function () {
       // return plyrBetLowerThanMinCall;
     }
 
-    breakBetloop() {
-      let comparePlyrBets = false;
-      players.forEach(function (val, i) {
-        // only for players that are still in the game
-        if (players[i].active === true) {
-          // find all other players that do not meet call
-          if (players[i].currBet < dealer.minCall) {
-            comparePlyrBets = true;
-          }
-        }
-      });
-      return comparePlyrBets;
-    }
+    // breakBetloop() {
+    //   let comparePlyrBets = false;
+    //   players.forEach(function (val, i) {
+    //     // only for players that are still in the game
+    //     if (players[i].active === true) {
+    //       // find all other players that do not meet call
+    //       if (players[i].currBet < dealer.minCall) {
+    //         comparePlyrBets = true;
+    //       }
+    //     }
+    //   });
+    //   return comparePlyrBets;
+    // }
 
     // newBetRound() {
     //   // clear call after each betting round
@@ -1830,7 +1925,16 @@ const initPlayers = function (nPlayers) {
   btnPlyr.forEach((ele, i) =>
     ele.addEventListener("click", function () {
       console.log(i);
-      players[i].bets();
+
+      if (
+        gameState === gameStateArr[5] &&
+        players[i] === players[dealer.dealerButton]
+      ) {
+        console.log(`${players[i].playerNo} did a small blind, should call`);
+        players[i].smallBlindCall();
+      } else {
+        players[i].bets();
+      }
     })
   );
 
@@ -1933,10 +2037,8 @@ const evaluateCards = function () {
   // Implement as object instead
 
   // create new object and concat with dealer's hand
-  for (let i = 0; i < activePlayers; i++) {
-    if (players[i].active === true) {
-      evalPlayer[i] = new Evaluate(players[i].playerNo, i, [], [], [], {});
-    }
+  for (let i = 0; i < players.length; i++) {
+    evalPlayer[i] = new Evaluate(players[i].playerNo, i, [], [], [], {});
   }
 
   // push hands into evalPlayer.cards
@@ -1947,26 +2049,35 @@ const evaluateCards = function () {
       }
       evalPlayer[i].cards.push(...dealer.hand);
     }
-  }
-
-  // sort ascending to indexOfRank
-  for (let i = 0; i < players.length; i++) {
-    if (players[i].active === true) {
-      evalPlayer[i].cards.sort(function (a, b) {
-        return a.indexOfRank - b.indexOfRank;
-      });
+    if (players[i].active === false) {
+      evalPlayer[i] = "DELETE";
     }
   }
 
+  console.log(evalPlayer);
+
+  for (let i = evalPlayer.length; i > -1; i--) {
+    if (evalPlayer[i] === "DELETE") {
+      evalPlayer.splice(i, 1);
+    }
+  }
+
+  console.log(evalPlayer);
+
+  // sort ascending to indexOfRank
+  for (let i = 0; i < evalPlayer.length; i++) {
+    evalPlayer[i].cards.sort(function (a, b) {
+      return a.indexOfRank - b.indexOfRank;
+    });
+  }
+
   // make new array just for index
-  for (let i = 0; i < players.length; i++) {
-    if (players[i].active === true) {
-      for (let n = 0; n < evalPlayer[i].cards.length; n++) {
-        const { suit, rank, indexOfRank } = evalPlayer[i].cards[n];
-        evalPlayer[i].arrIndexOfRank.push(indexOfRank);
-        evalPlayer[i].arrSuit.push(suit);
-        evalPlayer[i].arrRank.push(rank);
-      }
+  for (let i = 0; i < evalPlayer.length; i++) {
+    for (let n = 0; n < evalPlayer[i].cards.length; n++) {
+      const { suit, rank, indexOfRank } = evalPlayer[i].cards[n];
+      evalPlayer[i].arrIndexOfRank.push(indexOfRank);
+      evalPlayer[i].arrSuit.push(suit);
+      evalPlayer[i].arrRank.push(rank);
     }
   }
 
@@ -2202,7 +2313,7 @@ btnTurbo.addEventListener("click", function () {
   function bet1() {
     if (gameState === gameStateArr[5]) {
       clearInterval(bet1Itv);
-      dealer.promptPlyrBet();
+      dealer.promptPlyrBet(dealer.bigBlindPlyr - 1);
 
       if (gameState === gameStateArr[12]) {
         console.log("return");
@@ -2225,7 +2336,7 @@ btnTurbo.addEventListener("click", function () {
   function bet2() {
     if (gameState === gameStateArr[7]) {
       clearInterval(bet2Itv);
-      dealer.promptPlyrBet();
+      dealer.promptPlyrBet(dealer.dealerButton - 1);
 
       if (gameState === gameStateArr[12]) {
         console.log("return");
@@ -2248,7 +2359,7 @@ btnTurbo.addEventListener("click", function () {
   function bet3() {
     if (gameState === gameStateArr[9]) {
       clearInterval(bet3Itv);
-      dealer.promptPlyrBet();
+      dealer.promptPlyrBet(dealer.dealerButton - 1);
 
       if (gameState === gameStateArr[12]) {
         console.log("return");
@@ -2272,7 +2383,7 @@ btnTurbo.addEventListener("click", function () {
     if (gameState === gameStateArr[11]) {
       clearInterval(bet4Itv);
 
-      dealer.promptPlyrBet();
+      dealer.promptPlyrBet(dealer.dealerButton - 1);
 
       if (gameState === gameStateArr[12]) {
         console.log("return");
