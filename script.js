@@ -282,14 +282,13 @@ const PlayerCl = class {
       return;
     }
 
-    // if (this.currBet !== dealer.minCall) {
-    //   console.log(players[dealer.smallBlindPlyr].playerNo, this.playerNo);
-    //   // if this is the small blind player, let player raise instead of bet
-    //   if (players[dealer.smallBlindPlyr].playerNo === this.playerNo) {
-    //     this.raise();
-    //     return;
-    //   }
-    // }
+    console.log(`${this.playerNo}, your current bet is $${this.currBet}.`);
+    console.log(`Current call is ${dealer.minCall}`);
+    console.log(`Pot size is currently ${dealer.pot}`);
+
+    addTextBox(`${this.playerNo}, your current bet is $${this.currBet}.`, 1);
+    addTextBox(`Current call is ${dealer.minCall}`, 1);
+    addTextBox(`Pot size is currently ${dealer.pot}`, 1);
 
     if (this.active === true && this.startTurn === true) {
       // check if value in prompt is valid/true
@@ -321,11 +320,11 @@ const PlayerCl = class {
       ) {
         // store current betAmount
         this.currBet = betAmount;
-        dealer.pot += betAmount;
+        // dealer.pot += betAmount;
 
         // print to console amount bet
         console.log(`${this.playerNo} has placed ${this.currBet}`);
-        addTextBox(`${this.playerNo} has placed ${this.currBet}`, 1);
+        addTextBox(`${this.playerNo} has placed ${this.currBet}`, 2);
 
         // only approve if bet amount is less than current balance
         // if conditions are true, then push bet to movement array
@@ -429,7 +428,7 @@ const PlayerCl = class {
       ) {
         // store current raiseAmount
         this.currBet = currAddRaise;
-        dealer.pot += raiseAmount;
+        // dealer.pot += raiseAmount;
 
         // print to console amount bet
         console.log(`${this.playerNo} has met the raised ${this.currBet}`);
@@ -1138,6 +1137,8 @@ const endGame = function () {
       );
       console.log(...str);
       addTextBox(`${[...str]}`, 2);
+
+      dealer.plyrWinsPot(winner, dealer.pot);
     }
 
     // what hands are duplicates, new variable to improve readability
@@ -1316,6 +1317,8 @@ const endGame = function () {
           );
           console.log(...str);
           addTextBox(`${[...str]}`, 2);
+
+          dealer.plyrWinsPot(winner, dealer.pot);
         }
       }
     }
@@ -1459,6 +1462,7 @@ const endGame = function () {
           } wins!`,
           2
         );
+        dealer.plyrWinsPot(idxMaxValKicker, dealer.pot);
         break;
       }
     }
@@ -1471,8 +1475,16 @@ const endGame = function () {
       for (let i = 0; i < stalePlayer.length; i++) {
         str.push(`${stalePlayer[i].player}`);
       }
-      console.log(`${[...str]} split the pot!`);
-      addTextBox(`${[...str]} split the pot!`, 2);
+
+      const potDivideBy = str.length;
+      const splitPotAmount = dealer.pot / potDivideBy;
+
+      for (let i = 0; i < stalePlayer.length; i++) {
+        dealer.plyrWinsPot(i, splitPotAmount);
+      }
+
+      // console.log(`${[...str]} split the pot!`);
+      // addTextBox(`${[...str]} split the pot!`, 2);
     }
   };
 
@@ -1855,12 +1867,48 @@ const initDealer = function () {
         players.forEach(function (val, i) {
           if (players[i].active === true) {
             console.log(`${players[i].playerNo} wins!`);
+            this.plyrWinsPot(i, this.pot);
             dealer.setGameState(12);
           }
         });
       }
 
       // return plyrBetLowerThanMinCall;
+    }
+
+    plyrWinsPot(n, potAmount) {
+      let i = n;
+
+      if (potAmount === this.pot) {
+        console.log(
+          `${players[i].playerNo} wins the pot! $$$$$${dealer.pot}$$$$$`
+        );
+        addTextBox(
+          `${players[i].playerNo} wins the pot! $$$$$${dealer.pot}$$$$$`,
+          2
+        );
+      }
+
+      if (potAmount !== this.pot) {
+        console.log(
+          `${players[i].playerNo} splits the pot! $$$$$${dealer.pot}$$$$$`
+        );
+        addTextBox(
+          `${players[i].playerNo} splits the pot! $$$$$${dealer.pot}$$$$$`,
+          2
+        );
+      }
+
+      players[i].chips.currBal += potAmount;
+      dealer.pot = 0;
+
+      console.log(
+        `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`
+      );
+      addTextBox(
+        `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`,
+        2
+      );
     }
 
     // breakBetloop() {
