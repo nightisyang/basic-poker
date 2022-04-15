@@ -1523,7 +1523,7 @@ const initDealer = function () {
         dealerHandStrArr.push(` ${dealerRank} of ${dealerSuit}`);
       }
       console.log(`Dealer has${dealerHandStrArr}`);
-      addTextBox(`Dealer has${dealerHandStrArr}`, 1);
+      addTextBox(`Dealer has${dealerHandStrArr}`, 2);
     }
 
     initButton() {
@@ -1602,7 +1602,7 @@ const initDealer = function () {
       );
       addTextBox(
         `${players[i].playerNo} start the bet! Click on your button!`,
-        1
+        2
       );
     }
 
@@ -1673,7 +1673,7 @@ const initDealer = function () {
         );
         addTextBox(
           `${players[i].playerNo} start the bet! Click on your button!`,
-          1
+          2
         );
       }
 
