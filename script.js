@@ -16,6 +16,7 @@ let btnPlyr;
 // const btnPlyr2 = document.querySelector(".btn-plyr2");
 // const btnPlyr3 = document.querySelector(".btn-plyr3");
 // const btnPlyr4 = document.querySelector(".btn-plyr4");
+const btnNewGame = document.querySelector(".btn-newGame");
 
 let textbox = document.querySelector(".textarea");
 
@@ -1540,25 +1541,36 @@ const initDealer = function () {
 
     initButton() {
       this.dealerButton = players.length - 1;
+    }
 
+    initBlindNPlyrTurn() {
       this.smallBlindPlyr = this.dealerButton;
       this.bigBlindPlyr = this.smallBlindPlyr - 1;
 
+      if (this.bigBlindPlyr < 0) {
+        this.bigBlindPlyr = players.length - 1;
+      }
+
       this.plyrTurn = this.bigBlindPlyr - 1;
+
+      if (this.plyrTurn < 0) {
+        this.plyrTurn = players.length - 1;
+      }
+
       players[this.plyrTurn].startTurn = true;
     }
 
     moveButton() {
       const currBtnPosition = this.dealerButton;
-      const nextBtnPosition = currBtnPosition--;
+      const nextBtnPosition = currBtnPosition - 1;
 
       if (nextBtnPosition < 0) {
-        this.dealerButton = players.length;
+        this.dealerButton = players.length - 1;
+        console.log(`Button is with ${players[nextBtnPosition].playerNo}`);
+        return;
       }
 
-      if (players[nextBtnPosition].active === false) {
-        this.moveButton();
-      }
+      this.dealerButton = nextBtnPosition;
 
       console.log(`Button is with ${players[nextBtnPosition].playerNo}`);
     }
@@ -1593,7 +1605,11 @@ const initDealer = function () {
       // });
       console.error("**** A NEW ROUND ****");
 
-      const i = n;
+      let i = n;
+
+      if (i < 0) {
+        i = players.length - 1;
+      }
 
       players.forEach((val, i) => {
         players[i].startTurn = false;
@@ -1909,6 +1925,47 @@ const initDealer = function () {
         `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`,
         2
       );
+    }
+
+    startNewRound() {
+      console.log(`Reshuffling cards..`);
+      addTextBox(`Reshuffling cards...`, 2);
+
+      activePlayers = players.length;
+      evalPlayer = [];
+      stalePlayer = [];
+      muckPlayer = [];
+      muckCards = [];
+      deck = [];
+
+      generateDeck(suit, rank);
+      fisYatesShuff();
+
+      for (let i = 0; i < players.length; i++) {
+        players[i].hand = [];
+        players[i].currBet = 0;
+        players[i].active = true;
+        players[i].betRound = true;
+        players[i].startTurn = false;
+
+        console.log(`${players[i].playerNo} get ready for the next round!`);
+        addTextBox(`${players[i].playerNo} get ready for the next round!`, 2);
+      }
+
+      dealer.hand = [];
+      dealer.betCompleted = false;
+      dealer.pot = 0;
+      dealer.minCall = 0;
+
+      dealer.moveButton();
+      dealer.initBlindNPlyrTurn();
+
+      dealCard(activePlayers);
+      dealCard(activePlayers);
+      for (let i = 0; i < players.length; i++) {
+        players[i].showHand();
+      }
+      dealer.setGameState(4);
     }
 
     // breakBetloop() {
@@ -2247,6 +2304,16 @@ const evaluateCards = function () {
 
 btnReset.forEach((ele) => ele.addEventListener("click", resetGame));
 
+// btnNewGame.addEventListener("click", () => {
+//   if (gameState === gameStateArr[12]) {
+//     console.log("reset agme with same plaeyrs");
+//   } else if (gameStated !== gameStateArr[12]) {
+//     console.log(
+//       `there's an on-going game, please complete game before starting a new game`
+//     );
+//   }
+// });
+
 btnTurbo.addEventListener("click", function () {
   let gameCounter = 0;
 
@@ -2254,8 +2321,26 @@ btnTurbo.addEventListener("click", function () {
   console.log(`Game No.${gameCounter}`);
   addTextBox(`Game No.${gameCounter}`, 2);
 
-  initDealer();
-  dealer.setGameState(1);
+  if (gameState === gameStateArr[0]) {
+    initDealer();
+    dealer.setGameState(1);
+  }
+
+  if (gameState !== gameStateArr[1] && gameState !== gameStateArr[12]) {
+    console.log(
+      `there's an on-going game, please complete game before starting a new game`
+    );
+    addTextBox(
+      `there's an on-going game, please complete game before starting a new game`,
+      2
+    );
+
+    return;
+  }
+
+  if (gameState === gameStateArr[12]) {
+    dealer.startNewRound();
+  }
 
   const initGameItv = setInterval(() => {
     initGame();
@@ -2338,6 +2423,7 @@ btnTurbo.addEventListener("click", function () {
     if (gameState === gameStateArr[3]) {
       clearInterval(dealPlayersItv);
       dealer.initButton();
+      dealer.initBlindNPlyrTurn();
 
       dealCard(activePlayers);
       dealCard(activePlayers);
