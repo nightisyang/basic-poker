@@ -2014,18 +2014,45 @@ const initPlayers = function (nPlayers) {
   addTextBox(`${nPlayers} players initialized`, 1);
 
   for (let i = 0; i < nPlayers; i++) {
+    const newCardInfo = document.createElement("p");
+    newCardInfo.innerHTML = `cardInfo`;
+    newCardInfo.className = "plyrCardInfo";
+    newCardInfo.id = `plyrCardInfo-${i}`;
+
+    document.body.appendChild(newCardInfo);
+
+    const newBalaceInfo = document.createElement("p");
+    newBalaceInfo.innerHTML = `balanceInfo`;
+    newBalaceInfo.className = "plyrBalanceInfo";
+    newCardInfo.id = `plyrBalanceInfo-${i}`;
+    document.body.appendChild(newBalaceInfo);
+
+    const newForm = document.createElement("input");
+    // newForm.innerHTML = `form`;
+    newForm.className = "plyrForm";
+    newForm.setAttribute("type", "number");
+    newForm.setAttribute("name", "betValue");
+    newForm.setAttribute("placeholder", "Place bet amount");
+    newForm.id = `plyrForm-${i}`;
+    document.body.appendChild(newForm);
+
     const newBtn = document.createElement("button");
     newBtn.innerHTML = `Player ${i + 1}`;
     newBtn.className = "btn-plyr";
     document.body.appendChild(newBtn);
 
     // add the newly created element and its content into the DOM
-    const currentDiv = document.getElementById("placeholder");
+    const cardDiv = document.getElementById("cardPlaceholder");
+    const balDiv = document.getElementById("balancePlaceholder");
+    const formDiv = document.getElementById("formPlaceholder");
+    const btnDiv = document.getElementById("btnPlaceholder");
     // document.body.insertBefore(newBtn, currentDiv);
-
-    currentDiv.append(newBtn);
-    btnPlyr = document.querySelectorAll(".btn-plyr");
+    cardDiv.append(newCardInfo);
+    balDiv.append(newBalaceInfo);
+    formDiv.append(newForm);
+    btnDiv.append(newBtn);
   }
+  btnPlyr = document.querySelectorAll(".btn-plyr");
 
   btnPlyr.forEach((ele, i) =>
     ele.addEventListener("click", function () {
@@ -2042,28 +2069,6 @@ const initPlayers = function (nPlayers) {
       }
     })
   );
-
-  // function addElement() {
-  // create a new div element
-  // const newBtn = document.createElement("button");
-  // newBtn.innerHTML = "Player Placeholder";
-  // newBtn.className = "btn-plyr";
-  // document.body.appendChild(newBtn);
-
-  // // add the newly created element and its content into the DOM
-  // const currentDiv = document.getElementById("placeholder");
-  // // document.body.insertBefore(newBtn, currentDiv);
-
-  // currentDiv.append(newBtn);
-  // btnPlyr = document.querySelectorAll(".btn-plyr");
-
-  // btnPlyr.forEach((ele, i) =>
-  //   ele.addEventListener("click", function () {
-  //     console.log(i);
-  //     players[i].bets();
-  //   })
-  // );
-  // }
 };
 
 // Deal cards to players
