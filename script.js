@@ -218,9 +218,14 @@ const PlayerCl = class {
       // deduct current balance
       this.chips.currBal -= smallBlindAmount;
 
+      // set betRound to false
+      this.plyrCompleteBetRound();
+
       // print to console current balance
       console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
       addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 1);
+
+      this.plyrEndTurn();
     }
   }
 
@@ -273,6 +278,8 @@ const PlayerCl = class {
       // and rerun function
       this.bigBlind();
     }
+
+    this.plyrEndTurn();
   }
 
   bets() {
@@ -1541,6 +1548,7 @@ const initDealer = function () {
 
     initButton() {
       this.dealerButton = players.length - 1;
+      players[this.dealerButton].startTurn = true;
     }
 
     initBlindNPlyrTurn() {
@@ -2033,10 +2041,17 @@ const initPlayers = function (nPlayers) {
 
       if (
         gameState === gameStateArr[5] &&
-        players[i] === players[dealer.dealerButton]
+        players[i] === players[dealer.dealerButton] &&
+        players[dealer.dealerButton.startTurn === true]
       ) {
         console.log(`${players[i].playerNo} did a small blind, should call`);
         players[i].smallBlindCall();
+      } else if (
+        gameState === gameStateArr[4] &&
+        players[i] === players[dealer.bigBlindPlyr] &&
+        players[dealer.dealerButton.startTurn === true]
+      ) {
+        players[i].bigBlind();
       } else {
         players[i].bets();
       }
