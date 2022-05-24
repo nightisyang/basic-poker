@@ -32,11 +32,38 @@ h5 {
   text-align: center;
 }
 
-h6 {
+#btnPlaceholder {
   display: flex;
   justify-content: space-around;
   text-align: center;
 }
+
+#cardPlaceholder {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+#balancePlaceholder {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+#formPlaceholder {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
 .btn-plyr {
+  text-align: center;
+}
+
+.plyrCardInfo {
+  text-align: center;
+}
+
+.plyrBalanceInfo {
   text-align: center;
 }
