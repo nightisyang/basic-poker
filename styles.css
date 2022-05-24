@@ -43,10 +43,6 @@ h2 {
   margin-bottom: 20px;
 }
 
-.btn-plyr {
-  text-align: center;
-}
-
 .cards-container {
   display: flex;
   gap: 20px;
@@ -54,16 +50,31 @@ h2 {
 }
 
 .card {
-  /* display: grid; */
+  display: grid;
   width: 150px;
   border: 2px solid black;
-
 }
 
-.plyrCardInfo {
-  text-align: center;
+.card-player-name {
+  justify-self: center;
+}
+
+.input-plyr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  justify-self: center;
+  width: 60px;
+}
+
+.btn-plyr {
+  margin-bottom: 10px;
+  justify-self: center;
 }
 
 .plyrBalanceInfo {
+  text-align: center;
+}
+
+.plyrCardInfo {
   text-align: center;
 }

@@ -2021,45 +2021,27 @@ const initPlayers = function (nPlayers) {
 
   addTextBox(`${nPlayers} players initialized`, 1);
 
+  const cardsContainer = document.getElementById("cards-container");
+
+  const playerCards = function (n) {
+    return `      
+    <div class="card">
+      <h3 class="card-player-name" id="player${n + 1}">Player ${n + 1}</h3>
+      <div class="card-player-curBet">Current Bet:</div>
+      <div class="card-player-curHand">Current Hand:</div>
+      <div class="card-player-balance">Balance:</div>
+      <input class="input-plyr" type="number" name="betValue" id="plyrForm${
+        n + 1
+      }"></input>
+      <button class="btn-plyr">Player ${n + 1}</button>
+      </div>
+    `;
+  };
+
   for (let i = 0; i < nPlayers; i++) {
-    const newCardInfo = document.createElement("p");
-    newCardInfo.innerHTML = `cardInfo`;
-    newCardInfo.className = "plyrCardInfo";
-    newCardInfo.id = `plyrCardInfo-${i}`;
-
-    document.body.appendChild(newCardInfo);
-
-    const newBalaceInfo = document.createElement("p");
-    newBalaceInfo.innerHTML = `balanceInfo`;
-    newBalaceInfo.className = "plyrBalanceInfo";
-    newCardInfo.id = `plyrBalanceInfo-${i}`;
-    document.body.appendChild(newBalaceInfo);
-
-    const newForm = document.createElement("input");
-    // newForm.innerHTML = `form`;
-    newForm.className = "plyrForm";
-    newForm.setAttribute("type", "number");
-    newForm.setAttribute("name", "betValue");
-    newForm.setAttribute("placeholder", "Place bet amount");
-    newForm.id = `plyrForm-${i}`;
-    document.body.appendChild(newForm);
-
-    const newBtn = document.createElement("button");
-    newBtn.innerHTML = `Player ${i + 1}`;
-    newBtn.className = "btn-plyr";
-    document.body.appendChild(newBtn);
-
-    // add the newly created element and its content into the DOM
-    const cardDiv = document.getElementById("cardPlaceholder");
-    const balDiv = document.getElementById("balancePlaceholder");
-    const formDiv = document.getElementById("formPlaceholder");
-    const btnDiv = document.getElementById("btnPlaceholder");
-    // document.body.insertBefore(newBtn, currentDiv);
-    cardDiv.append(newCardInfo);
-    balDiv.append(newBalaceInfo);
-    formDiv.append(newForm);
-    btnDiv.append(newBtn);
+    cardsContainer.innerHTML += playerCards(i);
   }
+
   btnPlyr = document.querySelectorAll(".btn-plyr");
 
   btnPlyr.forEach((ele, i) =>
