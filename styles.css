@@ -15,6 +15,18 @@ h2 {
   text-align: center;
 }
 
+.start-btn {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-around;
+  gap: 1;
+}
+
 .textarea {
   display: block;
   margin-left: auto;
@@ -24,40 +36,28 @@ h2 {
   height: 350px;
 }
 
-h4 {
-  text-align: center;
-}
-
-h5 {
-  text-align: center;
-}
-
-#btnPlaceholder {
+.btn-reset-container {
   display: flex;
-  justify-content: space-around;
-  text-align: center;
-}
-
-#cardPlaceholder {
-  display: flex;
-  justify-content: space-around;
-  text-align: center;
-}
-
-#balancePlaceholder {
-  display: flex;
-  justify-content: space-around;
-  text-align: center;
-}
-
-#formPlaceholder {
-  display: flex;
-  justify-content: space-around;
-  text-align: center;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .btn-plyr {
   text-align: center;
+}
+
+.cards-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.card {
+  /* display: grid; */
+  width: 150px;
+  border: 2px solid black;
+
 }
 
 .plyrCardInfo {
