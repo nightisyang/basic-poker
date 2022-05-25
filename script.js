@@ -42,17 +42,6 @@ let stalePlayer = [];
 let muckPlayer = [];
 let muckCards = [];
 
-// for testing purposes
-// let globalStalemate = false;
-// let globalRoyalFlush = false;
-// let globalFourOfAKind = false;
-// let globalStraightFlush = false;
-// let globalFlush = false;
-// let globalFullHouse = false;
-// let globalStraight = false;
-// let globalTwoOfAKind = false;
-let globalHighPairSame = false;
-
 const gameStateArr = [
   "reset",
   "initGame",
@@ -537,9 +526,6 @@ const PlayerCl = class {
         dealer.pot += raiseAmount;
         dealer.potMov.amount.push(raiseAmount);
         dealer.potMov.player.push(this.playerNo);
-        // console.log(amount);
-        // console.log(player);
-        // console.log(dealer);
 
         // set betRound to false
         this.plyrCompleteBetRound();
@@ -674,30 +660,6 @@ const Evaluate = class {
     this.finalFive();
   }
 
-  // resetFold() {
-  //   // push cards and all other data into muck
-  //   const newMuck = new Muck(
-  //     this.player,
-  //     this.playerInitIndex,
-  //     this.cards,
-  //     this.arrIndexOfRank,
-  //     this.arrSuit,
-  //     this.arrRank,
-  //     this.result
-  //   );
-
-  //   muckPlayer.push(newMuck);
-
-  //   //reset everything else
-  //   this.player = player;
-  //   this.playerInitIndex = playerInitIndex;
-  //   this.cards = [];
-  //   this.arrIndexOfRank = [];
-  //   this.arrSuit = [];
-  //   this.arrRank = [];
-  //   this.result = {};
-  // }
-
   clearPushStrNArr() {
     this.result.resultIndexRank = [];
     this.result.resultRank = [];
@@ -827,35 +789,11 @@ const Evaluate = class {
         spliceErrorsStr(0, 2);
       }
 
-      // findThreeOfAKind();
-      // if (threeOfAKind === true) {
-      //   findPair();
-      // }
-
-      // if (threeOfAKind === false) {
-      //   findPair();
-      //   findThreeOfAKind();
-      // }
-
       if (pair === true && threeOfAKind === false) {
         pair = false;
         this.spliceErrors(0, str.length);
         clearStr();
       }
-
-      // this.arrRank.forEach((val, i, arr) => {
-      //   if (
-      //     threeOfAKind === true &&
-      //     val === arr[i + 1] &&
-      //     i !== startIndex3Kind &&
-      //     i !== startIndex3Kind + 1
-      //   ) {
-      //     fullHouse = true;
-      //     for (let n = i; n < i + 2; n++) {
-      //       pushStrNArr(n);
-      //     }
-      //   }
-      // });
     }
 
     // log if conidtions for straight is found - logic for 3 of a kind overlaps, if str.length = 3
@@ -1284,14 +1222,6 @@ const endGame = function () {
             console.log(playerRanks);
             sumCardsArrFunc(playerRanks);
 
-            // // get cards for each player to print to console
-            // getCards(playerIdx, str);
-
-            // // print to console
-            // console.log(`${evalPlayer[playerIdx].player} with ${[...str]}`);
-            // addTextBox(`\n${evalPlayer[playerIdx].player} with ${[...str]}`);
-            // return;
-
             if (printed === false) printDuplicates();
           }
         });
@@ -1631,14 +1561,6 @@ const initDealer = function () {
 
       console.log(`Player ${this.smallBlindPlyr + 1} place a small blind!!`);
       addTextBox(`Player ${this.smallBlindPlyr + 1} place a small blind!`, 2);
-
-      // this.plyrTurn = this.bigBlindPlyr - 1;
-
-      // if (this.plyrTurn < 0) {
-      //   this.plyrTurn = players.length - 1;
-      // }
-
-      // players[this.plyrTurn].startTurn = true;
     }
 
     moveButton() {
@@ -1675,15 +1597,6 @@ const initDealer = function () {
     }
 
     promptPlyrBet(n) {
-      // at the or start of turn, the first active player on the left of the dealer button starts the round
-      // ensure that player[i].startBet for this player is true, while others are false
-      // ensure that all active player's bet round is true
-
-      // players.forEach((val, i) => {
-      //   if (players[i].active === true) {
-      //     players[i].betRound = true;
-      //   }
-      // });
       console.error("**** A NEW ROUND ****");
 
       let i = n;
@@ -1736,7 +1649,6 @@ const initDealer = function () {
 
     startNextPlyrTurn() {
       let activePlyrArr = [];
-      // console.log(`Button is with ${players[nextBtnPosition].playerNo}`);
 
       for (let n = 0; n < players.length; n++) {
         if (players[n].active === true) {
@@ -1782,23 +1694,11 @@ const initDealer = function () {
 
       // if all players have placed at least 1 bet in this round, check if all players meet dealer.minCall
       if (this.betCompleted === true) {
-        // if (this.plyrTurn === dealerBtnMinusOneIdx || loopOver === true) {
-        // console.log(
-        //   "All players placed their bets, dealer checking if call is met..."
-        // );
-        // addTextBox(
-        //   "All players placed their bets, dealer checking if call is met...",
-        //   2
-        // );
-
         let checkCounter = 0;
 
         players.forEach(function (val, i) {
           if (players[i].active === true) {
             if (players[i].currBet === dealer.minCall) {
-              // console.log(
-              //   `${players[i].playerNo} meets call bet ${players[i].currBet}`
-              // );
               checkCounter++;
             }
           }
@@ -1808,7 +1708,6 @@ const initDealer = function () {
           console.log(
             `Some players do not meet minimum call amount, dealer checking...`
           );
-          // this.checkBets();
         } else if (checkCounter === activePlayers) {
           console.error(
             `All players meet call $${dealer.minCall}, starting next round..`
@@ -1850,77 +1749,6 @@ const initDealer = function () {
         });
       }
 
-      // if (players[i].currBet === this.minCall) {
-      //   console.log(
-      //     `${players[i].playerNo} meets call, go to next active player`
-      //   );
-      //   this.startNextPlyrTurn();
-      // }
-
-      /*
-      // if dealer button is with the first active player && curr player or this plyr turn is the last active player --> return true
-      let loopOver;
-      const startOfLine = activePlyrArr[0];
-      const endofLine = activePlyrArr[activePlyrArr.length - 1];
-      if (this.dealerButton === startOfLine && this.plyrTurn === endofLine) {
-        loopOver = true;
-      }
-      // const plyrTurnIdx = activePlyrArr.indexOf(this.plyrTurn);
-      const dealerBtnIdx = activePlyrArr.indexOf(this.dealerButton);
-      let dealerBtnMinusOneIdx = activePlyrArr[dealerBtnIdx - 1];
-
-      // if dealer button is with player that is not active, go back to the players array and find who is the next active player minus one of player with dealer button.
-      if (players[this.dealerButton].active === false) {
-        console.log(
-          `${
-            players[this.dealerButton].playerNo
-          } has the button and is out. Finding active player next to dealer button...`
-        );
-
-        // players.find();
-        for (let y = 1; y < players.length; y++) {
-          let actvPlyrMinusOneBtn = this.dealerButton - y;
-
-          console.log(actvPlyrMinusOneBtn);
-
-          if (players[actvPlyrMinusOneBtn].active === true) {
-            dealerBtnMinusOneIdx = actvPlyrMinusOneBtn;
-
-            console.log(
-              `The next active player next to dealer's button is ${
-                players[dealerBtnMinusOneIdx].playerNo
-              }, and it's ${players[this.plyrTurn].playerNo}'s turn.`
-            );
-            break;
-          }
-
-          console.log(dealerBtnMinusOneIdx, typeof dealerBtnMinusOneIdx);
-          console.log(this.plyrTurn, typeof this.plyrTurn);
-
-          // if actvPlyrMinusOneBtn is less than zero, search from the end
-          if (actvPlyrMinusOneBtn > -1) {
-            console.log(
-              `Reaching end of array... looking for next active player from the end of array`
-            );
-            // look for the first active player from the end of array
-            for (let z = players.length - 1; z > -1; z--) {
-              if (players[z].acitve === true) {
-                dealerBtnMinusOneIdx = z;
-                console.log(z);
-                console.log(
-                  `The next active player next to dealer's button is ${
-                    players[z].playerNo
-                  }, and it's ${players[this.plyrTurn].playerNo}'s turn.`
-                );
-
-                break;
-              }
-            }
-          }
-        }
-      }
-*/
-
       // console.log(this.plyrTurn, dealerBtnMinusOneIdx);
     }
 
@@ -1933,8 +1761,6 @@ const initDealer = function () {
         2
       );
 
-      // let plyrBetLowerThanMinCall = false;
-
       // let loop be clockwise, starting with dealer's button
       // loop has to go through all elements in array
 
@@ -1946,14 +1772,6 @@ const initDealer = function () {
 
           // find all other players that do not meet call
           if (players[x].currBet < dealer.minCall) {
-            // plyrBetLowerThanMinCall = true;
-
-            // alert(
-            //   `${players[x].playerNo}, meet raised amount or fold! Add ${
-            //     dealer.minCall - players[x].currBet
-            //   } to stay in the game!`
-            // );
-
             console.log(`Prompting ${players[x].playerNo} to call or fold...`);
 
             console.log(
@@ -1967,8 +1785,6 @@ const initDealer = function () {
               } to stay in the game!`,
               2
             );
-
-            // players[x].call();
 
             // if players don't meet call, they are still in the round
             players[x].betRound = true;
@@ -1999,68 +1815,6 @@ const initDealer = function () {
           }
         }
       }
-
-      // if (activePlayers > 1) {
-      //   let checkCounter = 0;
-
-      //   players.forEach(function (val, i) {
-      //     if (players[i].active === true) {
-      //       if (players[i].currBet === dealer.minCall) {
-      //         // console.log(
-      //         //   `${players[i].playerNo} meets call bet ${players[i].currBet}`
-      //         // );
-      //         checkCounter++;
-      //       }
-      //     }
-      //   });
-
-      //   if (checkCounter !== activePlayers) {
-      //     console.log(
-      //       `Some players do not meet minimum call amount, dealer checking...`
-      //     );
-      //     // this.checkBets();
-      //   } else if (checkCounter === activePlayers) {
-      //     console.error(
-      //       `All players meet call $${dealer.minCall}, starting next round..`
-      //     );
-
-      //     addTextBox(
-      //       `All players meet call $${dealer.minCall}, starting next round..`,
-      //       2
-      //     );
-
-      //     // reset values for new betting round
-      //     this.minCall = 0;
-
-      //     // reset values for player's new betting round
-      //     for (let i = 0; i < players.length; i++) {
-      //       if (players[i].active === true) {
-      //         players[i].betRound = true;
-      //       }
-
-      //       players[i].currBet = 0;
-      //     }
-
-      //     // new betting round, set to incomplete, betCompleted false
-      //     console.error("****NEW BET ROUND RESETING...****");
-      //     this.betCompleted = false;
-
-      //     // advance game state
-      //     console.error("****ADVANCING GAME STATE****");
-      //     const gameStateIdx = gameStateArr.indexOf(gameState);
-      //     dealer.setGameState(gameStateIdx + 1);
-      //   }
-      // } else if (activePlayers === 1) {
-      //   players.forEach(function (val, i) {
-      //     if (players[i].active === true) {
-      //       console.log(`${players[i].playerNo} wins!`);
-      //       this.plyrWinsPot(i, this.pot);
-      //       dealer.setGameState(12);
-      //     }
-      //   });
-      // }
-
-      // return plyrBetLowerThanMinCall;
     }
 
     plyrWinsPot(n, potAmount) {
@@ -2138,42 +1892,8 @@ const initDealer = function () {
       dealer.initBlindNPlyrTurn();
       dealer.setGameState(4);
     }
-
-    // breakBetloop() {
-    //   let comparePlyrBets = false;
-    //   players.forEach(function (val, i) {
-    //     // only for players that are still in the game
-    //     if (players[i].active === true) {
-    //       // find all other players that do not meet call
-    //       if (players[i].currBet < dealer.minCall) {
-    //         comparePlyrBets = true;
-    //       }
-    //     }
-    //   });
-    //   return comparePlyrBets;
-    // }
-
-    // newBetRound() {
-    //   // clear call after each betting round
-    //   this.minCall = 0;
-
-    //   for (let i = 0; i < players.length; i++) {
-    //     players[i].currBet = 0;
-    //   }
-    // }
   })();
 };
-
-// const initBetCycle = function () {
-//   game = new (class {
-//     constructor(cycle, betCycle) {
-//       this.cycle = cycle;
-//       this.betCycle = ["small blind", "big blind", "bet"];
-//     }
-//   })();
-// };
-
-// initBetCycle();
 
 // Initialize number of players
 const initPlayers = function (nPlayers) {
@@ -2227,13 +1947,6 @@ const initPlayers = function (nPlayers) {
       const betValue = formData.get("betValue");
 
       if (
-        gameState === gameStateArr[5] &&
-        players[i] === players[dealer.dealerButton] &&
-        players[dealer.dealerButton.startTurn === true]
-      ) {
-        // console.log(`${players[i].playerNo} did a small blind, should call`);
-        // players[i].smallBlindCall(betValue);
-      } else if (
         gameState === gameStateArr[4] &&
         players[i] === players[dealer.bigBlindPlyr] &&
         players[dealer.bigBlindPlyr].startTurn === true
@@ -2254,26 +1967,7 @@ const initPlayers = function (nPlayers) {
   });
 
   btnPlyr.forEach((ele, i) => {
-    // console.log(ele, typeof ele);
-    ele.addEventListener("click", function (event) {
-      // event.preventDefault();
-      // if (
-      //   gameState === gameStateArr[5] &&
-      //   players[i] === players[dealer.dealerButton] &&
-      //   players[dealer.dealerButton.startTurn === true]
-      // ) {
-      //   console.log(`${players[i].playerNo} did a small blind, should call`);
-      //   players[i].smallBlindCall();
-      // } else if (
-      //   gameState === gameStateArr[4] &&
-      //   players[i] === players[dealer.bigBlindPlyr] &&
-      //   players[dealer.dealerButton.startTurn === true]
-      // ) {
-      //   players[i].bigBlind();
-      // } else {
-      //   players[i].bets();
-      // }
-    });
+    ele.addEventListener("click", function (event) {});
   });
 
   btnCall.forEach((ele, i) => {
@@ -2353,20 +2047,6 @@ const initGame = function () {
     // Initialize dealer
     initDealer();
 
-    // let counter = 3;
-
-    // const countdown = setInterval(function () {
-    //   console.log(counter);
-    //   counter--;
-    //   addTextBox(".");
-
-    //   if (counter < 1) {
-    //     addTextBox("Done, lets play!", 1);
-    //     addTextBox("Select number of players", 1);
-
-    //     clearInterval(countdown);
-    //   }
-    // }, 1000);
     addTextBox("Done, lets play!", 1);
     addTextBox("Select number of players", 1);
 
@@ -2430,130 +2110,7 @@ const evaluateCards = function () {
   evalPlayer.forEach((val, i) => console.log(evalPlayer[i]));
 };
 
-// DOM
-
-/*
-// btnInit.addEventListener("click", initGame);
-
-// btnPlayers.addEventListener("click", function () {
-//   if (gameState === gameStateArr[1]) {
-//     // Select number of players
-//     let numPlayers;
-
-//     // Function to check validitity of returned value for number of players
-//     function checkValue() {
-//       numPlayers = Number(prompt("How many players? (1 - 4)", "4"));
-
-//       // check if value in prompt is valid/true
-//       if (Number.isInteger(numPlayers) && numPlayers >= 2 && numPlayers <= 10) {
-//         // Initilize number of players
-//         initPlayers(numPlayers);
-
-//         // Set activePlayers global state
-//         activePlayers = numPlayers;
-//       } else {
-//         checkValue();
-//       }
-//     }
-
-//     // Call function
-//     checkValue();
-
-//     // Change game state to setPlayers
-//     gameState = gameStateArr[2];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-
-// btnDeal.addEventListener("click", function () {
-//   if (gameState === gameStateArr[2]) {
-//     // Needs gameState
-
-//     // Check which stage of the game is at
-//     // First deal, initial number of players get dealt two cards
-//     dealCard(activePlayers);
-//     dealCard(activePlayers);
-
-//     for (let i = 0; i < players.length; i++) {
-//       players[i].showHand();
-//     }
-//     gameState = gameStateArr[3];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-
-// btnFlop.addEventListener("click", function () {
-//   if (gameState === gameStateArr[3]) {
-//     dealerFlop();
-//     console.log(dealer.hand);
-//     dealer.showHand();
-
-//     // Skip from 3 to 5, no bets
-//     gameState = gameStateArr[5];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-
-// btnTurn.addEventListener("click", function () {
-//   if (gameState === gameStateArr[5]) {
-//     dealerTurn();
-//     console.log(dealer.hand);
-//     dealer.showHand();
-
-//     // Skip from 5 to 7, no bets
-
-//     gameState = gameStateArr[7];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-
-// btnRiver.addEventListener("click", function () {
-//   if (gameState === gameStateArr[7]) {
-//     dealerRiver();
-//     console.log(dealer.hand);
-//     dealer.showHand();
-
-//     // Skip from 7 to 9, no bets
-
-//     gameState = gameStateArr[9];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-
-// btnEval.addEventListener("click", function () {
-//   if (gameState === gameStateArr[9]) {
-//     evaluateCards();
-
-//     evalPlayer.forEach((val, i) => evalPlayer[i].findAll());
-
-//     evalPlayer.forEach((val, i) => evalPlayer[i].finalFive());
-
-//     endGame();
-
-//     // Skip from 9 to 11, no bets
-//     gameState = gameStateArr[11];
-//   } else {
-//     console.error(`There is an existing game in progress! Please reset!`);
-//   }
-// });
-*/
-
 btnReset.forEach((ele) => ele.addEventListener("click", resetGame));
-
-// btnNewGame.addEventListener("click", () => {
-//   if (gameState === gameStateArr[12]) {
-//     console.log("reset agme with same plaeyrs");
-//   } else if (gameStated !== gameStateArr[12]) {
-//     console.log(
-//       `there's an on-going game, please complete game before starting a new game`
-//     );
-//   }
-// });
 
 btnTurbo.addEventListener("click", function () {
   let gameCounter = 0;
@@ -2680,8 +2237,6 @@ btnTurbo.addEventListener("click", function () {
   function blinds() {
     if (gameState === gameStateArr[4]) {
       clearInterval(blindsItv);
-      // players[dealer.smallBlindPlyr].smallBlind();
-      // players[dealer.bigBlindPlyr].bigBlind();
 
       // bigblind advances game state
       // dealer.setGameState(5);
@@ -2691,6 +2246,7 @@ btnTurbo.addEventListener("click", function () {
   function bet1() {
     if (gameState === gameStateArr[5]) {
       clearInterval(bet1Itv);
+      // player starts turn through bigblind
       // dealer.promptPlyrBet(dealer.bigBlindPlyr - 1);
 
       if (gameState === gameStateArr[12]) {
