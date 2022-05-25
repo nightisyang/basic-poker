@@ -101,7 +101,6 @@ const resetGame = function () {
   evalPlayer = [];
   stalePlayer = [];
   game;
-  globalHighPairSame = false;
 
   // remove buttons
   document.querySelectorAll(".btn-plyr").forEach(function (a) {
@@ -215,7 +214,7 @@ const PlayerCl = class {
       this.chips.currBal -= smallBlindAmount;
 
       // set betRound to false
-      this.plyrCompleteBetRound();
+      // this.plyrCompleteBetRound(); --> not necessary as small blind player will always have to call, will only complete bet round after calling
 
       // print to console current balance
       console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
@@ -1273,7 +1272,6 @@ const endGame = function () {
           }
 
           if (highPairSame === false) {
-            globalHighPairSame = true;
             stalemateFalse();
           }
           // return;
@@ -1565,17 +1563,17 @@ const initDealer = function () {
 
     moveButton() {
       const currBtnPosition = this.dealerButton;
-      const nextBtnPosition = currBtnPosition - 1;
+      let nextBtnPosition = currBtnPosition - 1;
 
       if (nextBtnPosition < 0) {
         this.dealerButton = players.length - 1;
-        console.log(`Button is with ${players[nextBtnPosition].playerNo}`);
+        console.log(`Button is with ${players[this.dealerButton].playerNo}`);
         return;
       }
 
       this.dealerButton = nextBtnPosition;
 
-      console.log(`Button is with ${players[nextBtnPosition].playerNo}`);
+      console.log(`Button is with ${players[this.dealerButton].playerNo}`);
     }
 
     setNoPlyrs() {
@@ -1648,6 +1646,8 @@ const initDealer = function () {
     }
 
     startNextPlyrTurn() {
+      console.error("looking for next active player");
+
       let activePlyrArr = [];
 
       for (let n = 0; n < players.length; n++) {
@@ -1660,6 +1660,7 @@ const initDealer = function () {
 
       if (i < 0) {
         i = activePlyrArr[activePlyrArr.length - 1];
+        console.log("i < 0: starting active player from end of array");
       }
 
       this.plyrTurn = i;
