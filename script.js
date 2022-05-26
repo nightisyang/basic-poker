@@ -19,7 +19,16 @@ let btnAllIn;
 let btnFold;
 let formPlyr;
 let inputPlyr;
+let gameCounter = 0;
 const btnNewGame = document.querySelector(".btn-newGame");
+const gameInfoPot = document.querySelector(".game-info-pot");
+const gameInfoCall = document.querySelector(".game-info-call");
+const gameInfoCards = document.querySelector(".game-info-cards");
+const gameInfoPhase = document.querySelector(".game-info-phase");
+const gameInfoNo = document.querySelector(".game-info-no");
+let cardCurBet;
+let cardCurHand;
+let cardCurBal;
 
 let textbox = document.querySelector(".textarea");
 
@@ -165,6 +174,7 @@ const PlayerCl = class {
   // ********* METHODS **********
   showHand() {
     let playerHandArr = [];
+    let playerHandGameArr = [];
 
     for (let i = 0; i < this.hand.length; i++) {
       let { rank: playerRank, suit: playerSuit } = this.hand[i];
@@ -173,7 +183,6 @@ const PlayerCl = class {
 
     console.log(`${this.playerNo} has ${playerHandArr}`);
     addTextBox(`${this.playerNo} has${playerHandArr}`, 1);
-    return playerHandArr;
   }
 
   smallBlind(betValue) {
@@ -339,7 +348,6 @@ const PlayerCl = class {
         }
         // store current betAmount
         this.currBet = betAmount;
-        // dealer.pot += betAmount;
 
         // print to console amount bet
         console.log(`${this.playerNo} has placed ${betAmount}`);
@@ -415,9 +423,6 @@ const PlayerCl = class {
         dealer.pot += betAmount;
         dealer.potMov.amount.push(betAmount);
         dealer.potMov.player.push(this.playerNo);
-        // console.log(amount);
-        // console.log(player);
-        // console.log(dealer);
 
         // set betRound to false
         this.plyrCompleteBetRound();
@@ -485,7 +490,6 @@ const PlayerCl = class {
       ) {
         // store current raiseAmount
         this.currBet = currAddRaise;
-        // dealer.pot += raiseAmount;
 
         // print to console amount bet
         console.log(`${this.playerNo} has met the raised ${this.currBet}`);
@@ -1067,6 +1071,169 @@ const StalePlayers = class {
   }
 };
 
+const updateUI = new (class UpdateUI {
+  constructor() {}
+  //Methods
+
+  initUI() {
+    const cardsContainer = document.getElementById("cards-container");
+
+    const playerCards = function (n) {
+      return `      
+    <div class="card">
+      <h3 class="card-player-name" id="player${n + 1}">Player ${n + 1}</h3>
+      <div class="card-player-curBet">Current Bet: 0</div>
+      <div class="card-player-curHand">Hand:</div>
+      <div class="card-player-balance">Balance: 1000</div>
+      <form class="form-plyr" id="formPlyr${n + 1}">
+          <input class="input-plyr" type="number" min="0" step="1" name="betValue" id="plyrForm${
+            n + 1
+          }">
+          <br>
+          <input type="submit" class="btn-plyr" value="Player ${n + 1} \nBet">
+      </form>
+      <button class="btn-call">Call</button>
+      <button class="btn-all-in">All-in</button>
+      <button class="btn-fold">Fold</button>
+
+      </div>
+    `;
+    };
+
+    for (let i = 0; i < activePlayers; i++) {
+      cardsContainer.innerHTML += playerCards(i);
+      // inputPlyr.push(`formPlyr${i + 1}`);
+    }
+
+    btnPlyr = document.querySelectorAll(".btn-plyr");
+    inputPlyr = document.querySelectorAll(".input-plyr");
+    btnCall = document.querySelectorAll(".btn-call");
+    btnAllIn = document.querySelectorAll(".btn-all-in");
+    btnFold = document.querySelectorAll(".btn-fold");
+
+    formPlyr = document.querySelectorAll(".form-plyr");
+
+    cardCurBet = document.querySelectorAll(".card-player-curBet");
+    cardCurHand = document.querySelectorAll(".card-player-curHand");
+    cardCurBal = document.querySelectorAll(".card-player-balance");
+
+    formPlyr.forEach((ele, i) => {
+      ele.addEventListener("submit", function (event) {
+        const formData = new FormData(event.target);
+        const betValue = formData.get("betValue");
+
+        if (
+          gameState === gameStateArr[4] &&
+          players[i] === players[dealer.bigBlindPlyr] &&
+          players[dealer.bigBlindPlyr].startTurn === true
+        ) {
+          players[i].bigBlind(betValue);
+        } else if (
+          gameState === gameStateArr[4] &&
+          players[i] === players[dealer.smallBlindPlyr] &&
+          players[dealer.smallBlindPlyr].startTurn === true
+        ) {
+          players[i].smallBlind(betValue);
+        } else {
+          players[i].bets(betValue);
+        }
+
+        updateUI.updatePlayerUI(i);
+
+        event.preventDefault();
+      });
+    });
+
+    btnPlyr.forEach((ele, i) => {
+      ele.addEventListener("click", function (event) {});
+    });
+
+    btnCall.forEach((ele, i) => {
+      // console.log(ele);
+      ele.addEventListener("click", (event) => {
+        const callAmount = dealer.minCall - players[i].currBet;
+
+        inputPlyr[i].value = callAmount;
+
+        event.preventDefault();
+      });
+    });
+
+    btnAllIn.forEach((ele, i) => {
+      // console.log(ele);
+      ele.addEventListener("click", (event) => {
+        const allInAmount = players[i].chips.currBal;
+
+        inputPlyr[i].value = allInAmount;
+
+        event.preventDefault();
+      });
+    });
+
+    btnFold.forEach((ele, i) => {
+      // console.log(ele);
+      ele.addEventListener("click", (event) => {
+        players[i].fold();
+        event.preventDefault();
+      });
+    });
+  }
+
+  updatePlayerUI(n) {
+    cardCurBet[n].innerHTML = `Current Bet: ${players[n].currBet}`;
+    cardCurBal[n].innerHTML = `Balance: ${players[n].chips.currBal}`;
+    gameInfoPot.innerHTML = `Current Pot: ${dealer.pot}`;
+    gameInfoCall.innerHTML = `Call: ${dealer.minCall}`;
+
+    // for (let i = 0; i < this.hand.length; i++) {
+    //   let { rank: playerRank, suit: playerSuit } = this.hand[i];
+    //   playerHandArr.push(` ${playerRank} of ${playerSuit}`);
+    //   playerHandGameArr.push(` ${playerRank}${playerSuit.charAt(0)}`);
+    // }
+
+    // cardCurHand.innerHTML = `${playerHandGameArr}`;
+  }
+
+  updatePlayerCardsUI() {
+    players.forEach((ele, i) => {
+      let playerHandGameArr = [];
+
+      players[i].hand.forEach((hand, n) => {
+        let { rank: playerRank, suit: playerSuit } = players[i].hand[n];
+        let icon;
+
+        if (playerSuit === "Diamonds") icon = "♦️";
+        if (playerSuit === "Spades") icon = "♣️";
+        if (playerSuit === "Clubs") icon = "♠️";
+        if (playerSuit === "Hearts") icon = "❤️";
+
+        playerHandGameArr.push(` ${playerRank} ${icon}`);
+      });
+      cardCurHand[i].innerHTML = `Hand: ${playerHandGameArr}`;
+    });
+  }
+
+  updateDealerCardsUI() {
+    let dealerHandGameInfo = [];
+
+    for (let i = 0; i < dealer.hand.length; i++) {
+      // Deconstruct hand
+      let { rank: dealerRank, suit: dealerSuit } = dealer.hand[i];
+
+      let icon;
+
+      if (dealerSuit === "Diamonds") icon = "♦️";
+      if (dealerSuit === "Spades") icon = "♣️";
+      if (dealerSuit === "Clubs") icon = "♠️";
+      if (dealerSuit === "Hearts") icon = "❤️";
+
+      dealerHandGameInfo.push(` ${dealerRank} ${icon}`);
+    }
+
+    gameInfoCards.innerHTML = `Community Cards: ${dealerHandGameInfo}`;
+  }
+})();
+
 const endGame = function () {
   const playerScore = [];
   let playerIndexWithDupe = [];
@@ -1628,6 +1795,7 @@ const initDealer = function () {
 
     setGameState(n) {
       gameState = gameStateArr[n];
+      gameInfoPhase.innerHTML = `Game Phase: ${gameState}`;
     }
 
     betRoundComplete() {
@@ -1844,6 +2012,9 @@ const initDealer = function () {
       players[i].chips.currBal += potAmount;
       dealer.pot = 0;
 
+      gameInfoPot.innerHTML = `Current Pot: ${dealer.pot}`;
+      cardCurBal[i].innerHTML = `Balance: ${players[i].chips.Bal}`;
+
       console.log(
         `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`
       );
@@ -1905,101 +2076,8 @@ const initPlayers = function (nPlayers) {
 
   addTextBox(`${nPlayers} players initialized`, 1);
 
-  const cardsContainer = document.getElementById("cards-container");
-
-  const playerCards = function (n) {
-    return `      
-    <div class="card">
-      <h3 class="card-player-name" id="player${n + 1}">Player ${n + 1}</h3>
-      <div class="card-player-curBet">Current Bet:</div>
-      <div class="card-player-curHand">Current Hand:</div>
-      <div class="card-player-balance">Balance:</div>
-      <form class="form-plyr" id="formPlyr${n + 1}">
-          <input class="input-plyr" type="number" min="0" step="1" name="betValue" id="plyrForm${
-            n + 1
-          }">
-          <br>
-          <input type="submit" class="btn-plyr" value="Player ${n + 1}">
-      </form>
-      <button class="btn-call">Call</button>
-      <button class="btn-all-in">All-in</button>
-      <button class="btn-fold">Fold</button>
-
-      </div>
-    `;
-  };
-
-  for (let i = 0; i < nPlayers; i++) {
-    cardsContainer.innerHTML += playerCards(i);
-    // inputPlyr.push(`formPlyr${i + 1}`);
-  }
-
-  btnPlyr = document.querySelectorAll(".btn-plyr");
-  inputPlyr = document.querySelectorAll(".input-plyr");
-  btnCall = document.querySelectorAll(".btn-call");
-  btnAllIn = document.querySelectorAll(".btn-all-in");
-  btnFold = document.querySelectorAll(".btn-fold");
-
-  formPlyr = document.querySelectorAll(".form-plyr");
-
-  formPlyr.forEach((ele, i) => {
-    ele.addEventListener("submit", function (event) {
-      const formData = new FormData(event.target);
-      const betValue = formData.get("betValue");
-
-      if (
-        gameState === gameStateArr[4] &&
-        players[i] === players[dealer.bigBlindPlyr] &&
-        players[dealer.bigBlindPlyr].startTurn === true
-      ) {
-        players[i].bigBlind(betValue);
-      } else if (
-        gameState === gameStateArr[4] &&
-        players[i] === players[dealer.smallBlindPlyr] &&
-        players[dealer.smallBlindPlyr].startTurn === true
-      ) {
-        players[i].smallBlind(betValue);
-      } else {
-        players[i].bets(betValue);
-      }
-
-      event.preventDefault();
-    });
-  });
-
-  btnPlyr.forEach((ele, i) => {
-    ele.addEventListener("click", function (event) {});
-  });
-
-  btnCall.forEach((ele, i) => {
-    console.log(ele);
-    ele.addEventListener("click", (event) => {
-      const callAmount = dealer.minCall - players[i].currBet;
-
-      inputPlyr[i].value = callAmount;
-
-      event.preventDefault();
-    });
-  });
-
-  btnAllIn.forEach((ele, i) => {
-    console.log(ele);
-    ele.addEventListener("click", (event) => {
-      const allInAmount = players[i].chips.currBal;
-
-      inputPlyr[i].value = allInAmount;
-
-      event.preventDefault();
-    });
-  });
-
-  btnFold.forEach((ele, i) => {
-    console.log(ele);
-    ele.addEventListener("click", (event) => {
-      players[i].fold();
-      event.preventDefault();
-    });
-  });
+  // placed here temporarily
+  updateUI.initUI();
 };
 
 // Deal cards to players
@@ -2114,11 +2192,11 @@ const evaluateCards = function () {
 btnReset.forEach((ele) => ele.addEventListener("click", resetGame));
 
 btnTurbo.addEventListener("click", function () {
-  let gameCounter = 0;
-
   gameCounter++;
   console.log(`Game No.${gameCounter}`);
   addTextBox(`Game No.${gameCounter}`, 2);
+
+  gameInfoNo.innerHTML = `Game No: ${gameCounter}`;
 
   if (gameState === gameStateArr[0]) {
     initDealer();
@@ -2229,6 +2307,8 @@ btnTurbo.addEventListener("click", function () {
         players[i].showHand();
       }
 
+      updateUI.updatePlayerCardsUI();
+
       dealer.initBlindNPlyrTurn();
 
       dealer.setGameState(4);
@@ -2264,6 +2344,7 @@ btnTurbo.addEventListener("click", function () {
       dealerFlop();
       console.log(dealer.hand);
       dealer.showHand();
+      updateUI.updateDealerCardsUI();
       dealer.setGameState(7);
     }
   }

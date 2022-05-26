@@ -34,6 +34,7 @@ h2 {
   resize: none;
   width: 560px;
   height: 350px;
+  margin-bottom: 20px;
 }
 
 .btn-reset-container {
@@ -53,7 +54,7 @@ h2 {
   display: grid;
   grid-template-columns: 9;
   justify-items: center;
-  width: 150px;
+  width: 180px;
   border: 2px solid black;
 }
 
@@ -84,6 +85,7 @@ h2 {
 
 .btn-fold {
   margin-top: 20px;
+  margin-bottom: 20px;
   justify-self: center;
   width: 75px;
 }
