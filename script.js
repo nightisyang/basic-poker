@@ -101,7 +101,7 @@ function addTextBox(text, numLine) {
 
 function addTextBox2(text, numLine) {
   let n = 0;
-  const speed = 20;
+  const speed = 5;
   let newLineArr = [];
   let newLineStr = "";
   for (let i = 0; i < numLine; i++) {
@@ -125,7 +125,7 @@ function addTextBox2(text, numLine) {
 }
 
 addTextBox2(
-  "Welcome!\n\nThis app is completely built on vanilla javascript and is my first ever coding project! This version runs completely on client-side browser!\n\nIt simulates a complete cycle of a Texas Hold 'em poker game, with basic features i.e. betting, calling, raising, checking, folding and other game logic e.g. determining the hand of a player, comparing player's cards at the end of betting, resolving ties and dealing with tiebreakers, selecting a winner(s), player rotation etc.\n\nAt the end of a game, the winner takes the pot amount and a new game can be started by pressing the Start Game! button at the top.\n\nBalances are brought forward to each game and the game can continue until a player loses their entire balance. The current game number is shown on the top right!\n\nA basic rundown of Texas Hold 'em can be found in the link below.\n\nIn this game, 2 to 10 players can be simulated starting with 1000 balance per player.\n\nPlayers cards are revealed on purpose to demonstrate card evaluation logic.\n\nClick on Start Game! to start a new game! The recommended small blind and big blinds are 1 & 2 respectively!\n\nHave fun!!"
+  "Welcome!\n\nThis app is completely built on vanilla javascript and is my first ever coding project! This version runs completely on client-side browser!\n\nIt simulates a complete cycle of a Texas Hold 'em poker game, with basic features i.e. betting, calling, raising, checking, folding and other game logic e.g. determining the hand of a player, comparing player's cards at the end of betting, resolving ties and dealing with tiebreakers, selecting a winner(s), player rotation etc.\n\nAt the end of a game, the winner takes the pot amount and a new game can be started by pressing the Start Game! button at the top.\n\nBalances are brought forward to each game and the game can continue until a player loses their entire balance. The current game number is shown on the top right!\n\nA basic rundown of Texas Hold 'em can be found in the link below.\n\nIn this game, 2 to 10 players can be simulated starting with 1000 balance per player.\n\nPlayers cards are revealed on purpose to demonstrate card evaluation logic.\n\nClick on Start Game! to start a new game! The recommended small blind and big blinds are 1 & 2 usually starting with Player 3 and 2 respectively! The minimum bets are Calls (see above), any bets larger than Calls are Raise.\n\nHave fun!!"
 );
 
 const resetGame = function () {
@@ -196,6 +196,7 @@ const PlayerCl = class {
     this.active = true;
     this.startTurn = false;
     this.betRound = true;
+    this.allIn = false;
   }
 
   // ********* METHODS **********
@@ -306,6 +307,52 @@ const PlayerCl = class {
     }
   }
 
+  allInBet(betValue) {
+    // check if value in prompt is valid/true
+    // prompt to take in a value
+    let allInAmount = betValue;
+
+    // change type to number
+    allInAmount = Number(allInAmount);
+    // value must be integer and more than 0
+
+    if (
+      Number.isInteger(allInAmount) &&
+      allInAmount > 0 &&
+      allInAmount === this.chips.currBal
+    ) {
+      this.allIn = true;
+
+      // store current allInAmount
+      this.currBet = allInAmount;
+
+      // print to console amount bet
+      console.log(`${this.playerNo} has went ALL IN ${this.currBet}!`);
+      addTextBox(`${this.playerNo} has went ALL IN ${this.currBet}!`, 2);
+
+      // only approve if bet amount is less than current balance
+      // if conditions are true, then push bet to movement array
+      this.chips.movement.push(allInAmount);
+      this.chips.movType.push("ALL IN");
+
+      // deduct current balance
+      this.chips.currBal -= allInAmount;
+
+      const { amount, player } = dealer.potMov;
+      dealer.pot += allInAmount;
+      dealer.potMov.amount.push(allInAmount);
+      dealer.potMov.player.push(this.playerNo);
+
+      // set betRound to false
+      this.plyrCompleteBetRound();
+
+      // end turn and ask dealer to start next player's turn
+      this.plyrEndTurn();
+
+      // if player bets more than balance
+    }
+  }
+
   bets(betValue) {
     if (this.active === true && activePlayers === 1) {
       console.log(`${this.playerNo} wins!`);
@@ -336,6 +383,17 @@ const PlayerCl = class {
         return;
       }
 
+      if (dealer.allIn === true) {
+        if (betAmount === this.chips.currBal) {
+          this.allInBet(betAmount);
+        }
+
+        if (betAmount === dealer.minCall) {
+          this.call(betAmount);
+        }
+        return;
+      }
+
       // value must be integer and more than 0
       if (
         Number.isInteger(betAmount) &&
@@ -361,6 +419,37 @@ const PlayerCl = class {
 
         if (this.currBet === dealer.minCall) {
           this.chips.movType.push("Call");
+          console.log(`${this.playerNo} has called`);
+
+          addTextBox(`${this.playerNo} has called`, 1);
+        }
+
+        // player goes all in
+        if (this.currBet === this.chips.currBal) {
+          dealer.minCall = this.currBet;
+          dealer.allIn = true;
+          this.allIn = true;
+
+          console.log(
+            `${this.playerNo} has raise call to $${dealer.minCall}, dealer to check bets!`
+          );
+
+          addTextBox(
+            `${this.playerNo} has went ALL IN! Raise to meet call ${dealer.minCall}!`,
+            2
+          );
+
+          this.chips.movType.push("ALL IN");
+
+          players.forEach((ele, i) => {
+            if (players[i].playerNo !== this.playerNo) {
+              players[i].betRound = true;
+            }
+          });
+
+          alert(
+            `${this.playerNo} has went ALL IN! Raise to meet call ${dealer.minCall}!`
+          );
         }
 
         // deduct current balance
@@ -369,43 +458,20 @@ const PlayerCl = class {
         if (this.currBet > dealer.minCall && dealer.minCall !== 0) {
           dealer.minCall = this.currBet;
 
-          if (this.currBet === this.chips.currBal) {
-            console.log(
-              `${this.playerNo} has raise call to $${dealer.minCall}, dealer to check bets!`
-            );
+          console.log(
+            `${this.playerNo} has raise call to $${dealer.minCall}, dealer to check bets!`
+          );
+          this.chips.movType.push("Raise");
 
-            addTextBox(
-              `${this.playerNo} has went ALL IN! Raise to meet call ${dealer.minCall}!`,
-              2
-            );
+          players.forEach((ele, i) => {
+            if (players[i].playerNo !== this.playerNo) {
+              players[i].betRound = true;
+            }
+          });
 
-            this.chips.movType.push("ALL IN");
-
-            players.forEach((ele, i) => {
-              if (players[i].playerNo !== this.playerNo) {
-                players[i].betRound = true;
-              }
-            });
-
-            alert(
-              `${this.playerNo} has went ALL IN! Raise to meet call ${dealer.minCall}!`
-            );
-          } else {
-            console.log(
-              `${this.playerNo} has raise call to $${dealer.minCall}, dealer to check bets!`
-            );
-            this.chips.movType.push("Raise");
-
-            players.forEach((ele, i) => {
-              if (players[i].playerNo !== this.playerNo) {
-                players[i].betRound = true;
-              }
-            });
-
-            alert(
-              `${this.playerNo} has raise! Raise to meet call ${dealer.minCall}!`
-            );
-          }
+          alert(
+            `${this.playerNo} has raise! Raise to meet call ${dealer.minCall}!`
+          );
         } else if (dealer.minCall === 0) {
           dealer.minCall = betAmount;
           this.chips.movType.push("Bet");
@@ -1688,6 +1754,7 @@ const initDealer = function () {
       this.smallBlind = smallBlind;
       this.bigBlind = bigBlind;
       this.minCall = 0;
+      this.allIn = false;
     }
     // Method
     showHand() {
@@ -1849,7 +1916,11 @@ const initDealer = function () {
       this.betRoundComplete();
 
       if (this.betCompleted === true) {
-        this.checkBets();
+        if (this.allIn === true) {
+          this.checkAllIn();
+        } else {
+          this.checkBets();
+        }
       }
 
       if (
@@ -1863,8 +1934,26 @@ const initDealer = function () {
         addTextBox(`${players[i].playerNo} start the bet! Place your bet!`, 2);
       }
 
+      // if all players hav e placed at least 1 bet in this round, and checkAllIn still returns this.betCompleted to be true, then evaluate game
+
+      if (dealer.allIn === true && this.betCompleted === true) {
+        // check that dealer has already dealt all community cards
+        // if dealer.hand.length !== 5, then deal cards
+
+        if (dealer.hand.length !== 5) {
+          let additionalCards = 5 - dealer.hand.length;
+
+          for (let i = 0; i < additionalCards; i++) {
+            dealerTurn();
+          }
+        }
+
+        // advance game state to 12 and let winnertItv pick up event and run evaluate function
+        dealer.setGameState(12);
+      }
+
       // if all players have placed at least 1 bet in this round, check if all players meet dealer.minCall
-      if (this.betCompleted === true) {
+      if (this.betCompleted === true && dealer.allIn === false) {
         let checkCounter = 0;
 
         players.forEach(function (val, i) {
@@ -1921,6 +2010,87 @@ const initDealer = function () {
       }
 
       // console.log(this.plyrTurn, dealerBtnMinusOneIdx);
+    }
+
+    checkAllIn() {
+      console.log(
+        "All players placed their bets, dealer checking if players went all in or call is met..."
+      );
+      addTextBox(
+        "All players placed their bets, dealer checking if players went all in or call is met...",
+        2
+      );
+
+      // let loop be clockwise, starting with dealer's button
+      // loop has to go through all elements in array
+
+      function checkLoop(i) {
+        let x = i;
+        // only for players that are still in the game
+        if (players[x].active === true) {
+          console.log("Getting active players");
+
+          // find all other players that do not meet call
+          if (
+            players[x].currBet < dealer.minCall ||
+            players[x].allIn === false
+          ) {
+            console.log(`Prompting ${players[x].playerNo} to call or fold...`);
+
+            console.log(
+              `${
+                players[x].playerNo
+              }, meet raised amount, go ALL IN or fold! Add ${
+                dealer.minCall - players[x].currBet
+              } to stay in the game!`
+            );
+            addTextBox(
+              `${
+                players[x].playerNo
+              }, meet raised amount, go ALL IN or fold! Add ${
+                dealer.minCall - players[x].currBet
+              } to stay in the game!`,
+              2
+            );
+
+            // if players don't meet call, they are still in the round
+            players[x].betRound = true;
+
+            // round is incomplete, do not advance to next round, players to meet call, raise or fold
+            dealer.betCompleted = false;
+          }
+          if (
+            players[x].currBet >= dealer.minCall ||
+            players[x].allIn === true
+          ) {
+            if (players[x].currBet === dealer.minCall) {
+              console.log(
+                `${players[x].playerNo} meets ${dealer.minCall}. Skipping..`
+              );
+            }
+
+            if (players[x].allIn === true) {
+              console.log(`${players[x].playerNo} went ALL IN. Skipping..`);
+            }
+          }
+        }
+      }
+
+      for (let i = this.dealerButton - 1; i >= 0; i--) {
+        console.error("Looping through to start of array to check bets");
+
+        checkLoop(i);
+
+        if (i === 0) {
+          console.error(
+            "Looping through to dealer button (end of array) to check bets"
+          );
+
+          for (let n = players.length - 1; n > this.dealerButton - 1; n--) {
+            checkLoop(n);
+          }
+        }
+      }
     }
 
     checkBets() {
@@ -2097,8 +2267,6 @@ const dealerFlop = function () {
 
 // Dealer Turn
 const dealerTurn = function () {
-  // take 3 cards from deck and put in dealers hand
-
   dealer.hand.push(deck[0]);
   deck.splice(0, 1);
 };
@@ -2401,7 +2569,7 @@ btnTurbo.addEventListener("click", function () {
         console.log("return");
         return;
       }
-      // dealer advances gameState in dealer.checkBets
+      // dealer advances gameState in dealer.startNextPlyrTurn
     }
   }
 
@@ -2418,8 +2586,6 @@ btnTurbo.addEventListener("click", function () {
 
         endGame();
       }
-
-      // dealer advances gameState in dealer.checkBets
     }
   }
 });
