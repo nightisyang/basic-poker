@@ -187,8 +187,6 @@ const PlayerCl = class {
 
   smallBlind(betValue) {
     // prompt player to bet
-    console.log(`${this.playerNo} place small blind!`);
-    addTextBox(`${this.playerNo} place small blind!`, 2);
 
     let smallBlindAmount = betValue;
 
@@ -225,10 +223,6 @@ const PlayerCl = class {
       // set betRound to false
       // this.plyrCompleteBetRound(); --> not necessary as small blind player will always have to call, will only complete bet round after calling
 
-      // print to console current balance
-      console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
-      addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 1);
-
       this.plyrEndTurn();
     }
   }
@@ -239,9 +233,6 @@ const PlayerCl = class {
   }
 
   bigBlind(betValue) {
-    console.log(`${this.playerNo} place big blind!`);
-    addTextBox(`${this.playerNo} place big blind!`, 2);
-
     let bigBlindAmount = betValue;
 
     // change type to number
@@ -273,10 +264,6 @@ const PlayerCl = class {
       // set betRound to false
       this.plyrCompleteBetRound();
 
-      // print to console current balance
-      console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
-      addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 1);
-
       this.plyrEndTurn();
 
       // bigblind advances game state
@@ -300,26 +287,13 @@ const PlayerCl = class {
       return;
     }
 
-    console.log(`${this.playerNo}, your current bet is $${this.currBet}.`);
-    console.log(`Current call is ${dealer.minCall}`);
-    console.log(`Pot size is currently ${dealer.pot}`);
-
-    addTextBox(`${this.playerNo}, your current bet is $${this.currBet}.`, 1);
-    addTextBox(`Current call is ${dealer.minCall}`, 1);
-    addTextBox(`Pot size is currently ${dealer.pot}`, 1);
-
     if (this.active === true && this.startTurn === true) {
       // check if value in prompt is valid/true
       // prompt to take in a value
       let betAmount = betValue;
 
-      console.log(
-        `${this.playerNo} place your bets! To fold, type "fold" (without quotes)!`
-      );
-      addTextBox(
-        `${this.playerNo} place your bets! To fold, type "fold" (without quotes)!`,
-        2
-      );
+      // console.log(`${this.playerNo} place your bets!`);
+      // addTextBox(`${this.playerNo} place your bets!`, 2);
 
       if (betAmount === "fold") {
         this.fold();
@@ -351,13 +325,8 @@ const PlayerCl = class {
 
         // print to console amount bet
         console.log(`${this.playerNo} has placed ${betAmount}`);
-        console.log(`${this.playerNo} current bet amounnt is ${this.currBet}`);
 
         addTextBox(`${this.playerNo} has placed ${betAmount}`, 2);
-        addTextBox(
-          `${this.playerNo} current bet amounnt is ${this.currBet}`,
-          2
-        );
 
         // only approve if bet amount is less than current balance
         // if conditions are true, then push bet to movement array
@@ -369,10 +338,6 @@ const PlayerCl = class {
 
         // deduct current balance
         this.chips.currBal -= betAmount;
-
-        // print to console current balance
-        console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
-        addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 2);
 
         if (this.currBet > dealer.minCall && dealer.minCall !== 0) {
           dealer.minCall = this.currBet;
@@ -493,7 +458,7 @@ const PlayerCl = class {
 
         // print to console amount bet
         console.log(`${this.playerNo} has met the raised ${this.currBet}`);
-        addTextBox(`${this.playerNo} has met the raised ${this.currBet}`, 1);
+        addTextBox(`${this.playerNo} has met the raised ${this.currBet}`, 2);
 
         // only approve if bet amount is less than current balance
         // if conditions are true, then push bet to movement array
@@ -505,10 +470,6 @@ const PlayerCl = class {
 
         // deduct current balance
         this.chips.currBal -= raiseAmount;
-
-        // print to console current balance
-        console.log(`${this.playerNo} currently has ${this.chips.currBal}`);
-        addTextBox(`${this.playerNo} currently has ${this.chips.currBal}`, 1);
 
         if (currAddRaise > dealer.minCall && dealer.minCall !== 0) {
           dealer.minCall = currAddRaise;
@@ -591,7 +552,7 @@ const PlayerCl = class {
       this.active = false;
 
       console.log(`${this.playerNo} has folded!`);
-      addTextBox(`${this.playerNo} has folded!`, 1);
+      addTextBox(`${this.playerNo} has folded!`, 2);
 
       // set betRound to false
       this.plyrCompleteBetRound();
@@ -603,7 +564,7 @@ const PlayerCl = class {
 
   check() {
     console.log(`${this.playerNo} has checked`);
-    addTextBox(`${this.playerNo} has checked`, 1);
+    addTextBox(`${this.playerNo} has checked`, 2);
     const { amount, player } = dealer.potMov;
     // dealer.pot += betAmount;
     dealer.potMov.amount.push(0);
@@ -1628,7 +1589,16 @@ const endGame = function () {
           } wins!`,
           2
         );
-        dealer.plyrWinsPot(idxMaxValKicker, dealer.pot);
+
+        let winnerIndex;
+
+        for (let i = 0; i < players.length; i++) {
+          if (players[i].playerNo === stalePlayer[idxMaxValKicker].player) {
+            winnerIndex = i;
+          }
+        }
+
+        dealer.plyrWinsPot(winnerIndex, dealer.pot);
         break;
       }
     }
@@ -1645,8 +1615,12 @@ const endGame = function () {
       const potDivideBy = str.length;
       const splitPotAmount = dealer.pot / potDivideBy;
 
-      for (let i = 0; i < stalePlayer.length; i++) {
-        dealer.plyrWinsPot(i, splitPotAmount);
+      for (let i = 0; i < players.length; i++) {
+        for (let n = 0; n < str.length; n++) {
+          if (players[i].playerNo === str[0]) {
+            dealer.plyrWinsPot(i, splitPotAmount);
+          }
+        }
       }
 
       // console.log(`${[...str]} split the pot!`);
@@ -1735,12 +1709,15 @@ const initDealer = function () {
       if (nextBtnPosition < 0) {
         this.dealerButton = players.length - 1;
         console.log(`Button is with ${players[this.dealerButton].playerNo}`);
+        addTextBox(`Button is with ${players[this.dealerButton].playerNo}`, 2);
+
         return;
       }
 
       this.dealerButton = nextBtnPosition;
 
       console.log(`Button is with ${players[this.dealerButton].playerNo}`);
+      addTextBox(`Button is with ${players[this.dealerButton].playerNo}`, 2);
     }
 
     setNoPlyrs() {
@@ -1784,12 +1761,10 @@ const initDealer = function () {
         return;
       }
 
-      console.log(
-        `${players[i].playerNo} start the bet! Click on your button!`
-      );
+      console.log(`${players[i].playerNo} it's a new round! Place your bets!`);
       addTextBox(
-        `${players[i].playerNo} start the bet! Click on your button!`,
-        2
+        `${players[i].playerNo} it's a new round! Place your bets!`,
+        1
       );
     }
 
@@ -1852,13 +1827,8 @@ const initDealer = function () {
       ) {
         players[i].startTurn = true;
         // console.log(`${players[i].playerNo} ${players[i].startTurn}`);
-        console.log(
-          `${players[i].playerNo} start the bet! Click on your button!`
-        );
-        addTextBox(
-          `${players[i].playerNo} start the bet! Click on your button!`,
-          2
-        );
+        console.log(`${players[i].playerNo} start the bet! Place your bet!`);
+        addTextBox(`${players[i].playerNo} start the bet! Place your bet!`, 2);
       }
 
       // if all players have placed at least 1 bet in this round, check if all players meet dealer.minCall
@@ -2013,15 +1983,7 @@ const initDealer = function () {
       dealer.pot = 0;
 
       gameInfoPot.innerHTML = `Current Pot: ${dealer.pot}`;
-      cardCurBal[i].innerHTML = `Balance: ${players[i].chips.Bal}`;
-
-      console.log(
-        `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`
-      );
-      addTextBox(
-        `${players[i].playerNo}, your current balance is ${players[i].chips.currBal}!`,
-        2
-      );
+      cardCurBal[i].innerHTML = `Balance: ${players[i].chips.currBal}`;
     }
 
     startNewGame() {
@@ -2046,7 +2008,7 @@ const initDealer = function () {
         players[i].startTurn = false;
 
         console.log(`${players[i].playerNo} get ready for the next round!`);
-        addTextBox(`${players[i].playerNo} get ready for the next round!`, 2);
+        addTextBox(`${players[i].playerNo} get ready for the next round!`, 1);
       }
 
       dealer.hand = [];
@@ -2368,6 +2330,7 @@ btnTurbo.addEventListener("click", function () {
       dealerTurn();
       console.log(dealer.hand);
       dealer.showHand();
+      updateUI.updateDealerCardsUI();
       dealer.setGameState(9);
     }
   }
@@ -2391,6 +2354,7 @@ btnTurbo.addEventListener("click", function () {
       dealerRiver();
       console.log(dealer.hand);
       dealer.showHand();
+      updateUI.updateDealerCardsUI();
       dealer.setGameState(11);
     }
   }
