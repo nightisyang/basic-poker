@@ -99,48 +99,75 @@ function addTextBox(text, numLine) {
   textbox.scrollTop = textbox.scrollHeight;
 }
 
-addTextBox("Welcome!");
-addTextBox(
-  "This app is completely built on vanilla javascript and is my first ever coding project!",
-  2
-);
+function addTextBox2(text, numLine) {
+  let n = 0;
+  const speed = 20;
+  let newLineArr = [];
+  let newLineStr = "";
+  for (let i = 0; i < numLine; i++) {
+    newLineArr.push("\n");
+  }
 
-addTextBox(
-  "It simulates a complete cycle of a Texas Hold 'em poker game, with basic features i.e. betting, calling, raising, checking, folding and also features complete game logic to compare players' cards at the end of betting around after dealer deals the final community card (river).",
-  2
-);
+  newLineArr.forEach((val) => (newLineStr += val));
 
-addTextBox(
-  "At the end of a game, the winner takes the pot amount and a new game can be started by pressing the Start Game! button at the top.",
-  2
-);
+  const combinedText = newLineStr + text;
 
-addTextBox(
-  "Balances are brought forward to each game and the game can continue until a player loses their entire balance. The current game number is shown on the top right!",
-  2
-);
+  const typeWriter = function () {
+    if (n < text.length) {
+      textbox.value += text.charAt(n);
+      n++;
+      const textboxHeight = textbox.scrollHeight;
+      textbox.scrollTop = textbox.scrollHeight;
+      setTimeout(typeWriter, speed);
+    }
+  };
+  typeWriter();
+}
 
-addTextBox(
-  `A basic rundown of how a game of Texas Hold 'em can be found below.`,
-  2
+addTextBox2(
+  "Welcome!\n\nThis app is completely built on vanilla javascript and is my first ever coding project! This version runs completely on client-side browser!\n\nIt simulates a complete cycle of a Texas Hold 'em poker game, with basic features i.e. betting, calling, raising, checking, folding and other game logic e.g. determining the hand of a player, comparing player's cards at the end of betting, resolving ties and dealing with tiebreakers, selecting a winner(s), player rotation etc.\n\nAt the end of a game, the winner takes the pot amount and a new game can be started by pressing the Start Game! button at the top.\n\nBalances are brought forward to each game and the game can continue until a player loses their entire balance. The current game number is shown on the top right!\n\nA basic rundown of how a game of Texas Hold 'em can be found in the link below.\n\nIn this game, 2 to 10 players can be simulated starting with 1000 balance per player.\n\nPlayers cards are revealed on purpose to demonstrate card evaluation logic.\n\nClick on Start Game! to start a new game! The recommended small blind and big blinds are 1 & 2 respectively!\n\nHave fun!!"
 );
+// addTextBox(
+//   "This app is completely built on vanilla javascript and is my first ever coding project! This version runs completely on client-side browser!",
+//   2
+// );
 
-addTextBox(
-  `In this game, 2 to 10 players can be simulated starting with 1000 balance per player.`,
-  2
-);
+// addTextBox(
+//   "It simulates a complete cycle of a Texas Hold 'em poker game, with basic features i.e. betting, calling, raising, checking, folding and also features complete game logic e.g. determining the hand of a player, comparing player's cards at the end of betting, resolving ties and dealing with tiebreakers, selecting a winner(s), player rotation etc.",
+//   2
+// );
 
-addTextBox(
-  `Players cards are revealed on purpose to demonstrate the card evaluation logic.`,
-  2
-);
+// addTextBox(
+//   "At the end of a game, the winner takes the pot amount and a new game can be started by pressing the Start Game! button at the top.",
+//   2
+// );
 
-addTextBox(
-  `Click on Start Game! To start a new game! The recommended small blind and big blinds are 1 & 2 respectively!`,
-  2
-);
+// addTextBox(
+//   "Balances are brought forward to each game and the game can continue until a player loses their entire balance. The current game number is shown on the top right!",
+//   2
+// );
 
-addTextBox(`Have fun!!`, 2);
+// addTextBox(
+//   `A basic rundown of how a game of Texas Hold 'em can be found in the link below.`,
+//   2
+// );
+
+// addTextBox(
+//   `In this game, 2 to 10 players can be simulated starting with 1000 balance per player.`,
+//   2
+// );
+
+// addTextBox(
+//   `Players cards are revealed on purpose to demonstrate card evaluation logic.`,
+//   2
+// );
+
+// addTextBox(
+//   `Click on Start Game! to start a new game! The recommended small blind and big blinds are 1 & 2 respectively!`,
+//   2
+// );
+
+// addTextBox(`Have fun!!`, 2);
 
 const resetGame = function () {
   gameState = gameStateArr[0];
