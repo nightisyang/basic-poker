@@ -1727,7 +1727,12 @@ const initDealer = function () {
     }
 
     initBlindNPlyrTurn() {
-      this.smallBlindPlyr = this.dealerButton;
+      this.smallBlindPlyr = this.dealerButton - 1;
+
+      if (this.smallBlindPlyr < 0) {
+        this.smallBlindPlyr = players.length - 1;
+      }
+
       this.bigBlindPlyr = this.smallBlindPlyr - 1;
 
       if (this.bigBlindPlyr < 0) {
