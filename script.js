@@ -386,6 +386,7 @@ const PlayerCl = class {
       if (dealer.allIn === true) {
         if (betAmount === this.chips.currBal) {
           this.allInBet(betAmount);
+          return;
         }
 
         if (betAmount === dealer.minCall) {
