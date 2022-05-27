@@ -2220,6 +2220,7 @@ const initDealer = function () {
       dealer.pot = 0;
       dealer.minCall = 0;
       dealer.allIn = false;
+
       dealer.moveButton();
 
       dealCard(activePlayers);
