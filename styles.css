@@ -97,3 +97,8 @@ h2 {
 .plyrCardInfo {
   text-align: center;
 }
+
+.links-container {
+  display: flex;
+  justify-content: center;
+}
