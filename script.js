@@ -2209,6 +2209,7 @@ const initDealer = function () {
         players[i].active = true;
         players[i].betRound = true;
         players[i].startTurn = false;
+        players[i].allIn = false;
 
         console.log(`${players[i].playerNo} get ready for the next round!`);
         addTextBox(`${players[i].playerNo} get ready for the next round!`, 1);
@@ -2218,7 +2219,7 @@ const initDealer = function () {
       dealer.betCompleted = false;
       dealer.pot = 0;
       dealer.minCall = 0;
-
+      dealer.allIn = false;
       dealer.moveButton();
 
       dealCard(activePlayers);
