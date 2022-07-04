@@ -2033,7 +2033,7 @@ const initDealer = function () {
 
           // find all other players that do not meet call
           if (
-            players[x].currBet < dealer.minCall ||
+            players[x].currBet < dealer.minCall &&
             players[x].allIn === false
           ) {
             console.log(`Prompting ${players[x].playerNo} to call or fold...`);
