@@ -138,10 +138,12 @@ const resetGame = function () {
   stalePlayer = [];
   game;
 
+  document.getElementById("cards-container").innerHTML = " ";
+
   // remove buttons
-  document.querySelectorAll(".btn-plyr").forEach(function (a) {
-    a.remove();
-  });
+  // document.querySelectorAll(".btn-plyr").forEach(function (a) {
+  //   a.remove();
+  // });
 
   console.log("Game reset, please initialize game to play!");
   textbox.value = "Reset! Press Initialize game to start!";
